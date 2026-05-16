@@ -231,7 +231,7 @@ function App() {
       <div style={{display:"flex",gap:8,padding:"14px 24px",overflowX:"auto",borderBottom:"1px solid #2d3148"}}>
         {tabs.map(t=><Tag key={t.id} active={tab===t.id} onClick={()=>setTab(t.id)}><span>{t.icon}</span>{t.label}</Tag>)}
         <Tag active={tab==="data"} onClick={()=>setTab("data")}><span>📋</span>DỮ LIỆU</Tag>
-        <Tag active={tab==="ai"} onClick={()=>setTab("ai")}><span>🤖</span>AI INSIGHT</Tag>
+
       </div>
 
       <div style={{padding:"16px 24px"}}>
