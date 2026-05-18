@@ -1,618 +1,90 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>🎓 Phân tích Chuyên sâu Thí sinh 2026</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.1.9/Recharts.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.21.2/babel.min.js"></script>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#0e1117;font-family:'Segoe UI',sans-serif;color:#c8cde0;font-size:13px}
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-track{background:#0e1117}
-::-webkit-scrollbar-thumb{background:#2d3148;border-radius:3px}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-select,input{background:#1e2130;border:1px solid #2d3148;color:#c8cde0;border-radius:6px;padding:6px 10px;font-size:12px;outline:none}
-button{cursor:pointer;font-family:inherit}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CRM Dashboard</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    body{
+      margin:0;
+      background:#0e1117;
+      color:white;
+      font-family:Segoe UI,sans-serif;
+    }
+  </style>
 </head>
 <body>
+
 <div id="root"></div>
+
 <script type="text/babel">
-const {useState,useEffect,useRef,useCallback} = React;
-const {BarChart,Bar,XAxis,YAxis,CartesianGrid,Tooltip,ResponsiveContainer,PieChart,Pie,Cell,LineChart,Line,RadarChart,Radar,PolarGrid,PolarAngleAxis,ComposedChart,LabelList,AreaChart,Area} = Recharts;
 
-const PROXY   = "https://royal-poetry-ba87.anhthai35789.workers.dev";
-const KEY     = "HeUxnVqK2c56898b959";
-const SECRET  = "92f8a3c93d940a7442cd";
-const PROJECT = "673ea2058e0197002bd25b7f";
-const POLL    = 30;
-const C1 = ["#3b82f6","#10b981","#8b5cf6","#f59e0b","#ef4444","#06b6d4","#ec4899","#6366f1","#84cc16","#f97316"];
+const {
+  useState,
+  useEffect,
+  useRef,
+  useCallback
+} = React;
 
-async function sign(ts) {
-  const enc = new TextEncoder();
-  const k = await crypto.subtle.importKey("raw",enc.encode(SECRET),{name:"HMAC",hash:"SHA-512"},false,["sign"]);
-  const s = await crypto.subtle.sign("HMAC",k,enc.encode(ts+PROJECT));
-  return Array.from(new Uint8Array(s)).map(b=>b.toString(16).padStart(2,"0")).join("");
-}
-async function apiFetch(table) {
-  const ts=String(Date.now()), sg=await sign(ts);
-  const r=await fetch(`${PROXY}/_api/base-table/find`,{method:"POST",headers:{"Content-Type":"application/json","cb-access-key":KEY,"cb-project-token":PROJECT,"cb-access-timestamp":ts,"cb-access-sign":sg},body:JSON.stringify({table,page:1,limit:500})});
-  if(!r.ok) throw new Error(`HTTP ${r.status}`);
-  return r.json();
-}
+const {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  ComposedChart,
+  LabelList,
+  LineChart,
+  Line
+} = Recharts;
 
-const MOCK = Array.from({length:200},(_,i)=>({
-  _id:`c${i}`,name:`Thí sinh ${i+1}`,phone:`09${String(i).padStart(8,"0")}`,
-  province:["Hồ Chí Minh","Bình Dương","Đồng Nai","Tiền Giang","Long An","Bình Thuận","Tây Ninh","Bà Rịa - VT","Vĩnh Long","An Giang"][i%10],
-  major:["CNTT","Kinh tế","Quản trị","Y dược","Luật","Kế toán","Marketing","Du lịch","Khách sạn","Ngôn ngữ Anh"][i%10],
-  status:["Mới","Tiếp cận","Quan tâm","Xét Học bạ","Fail"][Math.floor(Math.random()*5)],
-  telesales:["Tổ 1","Tổ 2","Tổ 3","Tổ 4","Tổ 5"][i%5],
-  kenh:["Nguồn Offline","Zalo Collect","Nguồn Online","Mua list giới thiệu","Ngày hội"][i%5],
-  cccd:i%7===0?"":"OK",email:i%6===0?"":"ok@gmail.com",
-  diem_tbm:(6+Math.random()*4).toFixed(2)*1,
-  diem_tohop:(18+Math.random()*12).toFixed(2)*1,
-  diem_dgnl:(600+Math.random()*400).toFixed(0)*1,
-  xhb:i%3===0?"Không XHB":"Có XHB",
-  created_at:new Date(Date.now()-i*86400000).toISOString().split("T")[0]
-}));
+/* =========================
+   ENV CONFIG
+========================= */
 
-const TT={contentStyle:{background:"#1e2130",border:"1px solid #2d3148",borderRadius:8,color:"#e8eaf0",fontSize:11}};
+const PROXY = "YOUR_PROXY";
+const KEY = "YOUR_KEY";
+const SECRET = "YOUR_SECRET";
+const PROJECT = "YOUR_PROJECT";
 
-const CustomBarLabel=({x,y,width,value})=>{
-  if(!value||width<18) return null;
-  return <text x={x+width/2} y={y-5} fill="#e8eaf0" textAnchor="middle" fontSize={11} fontWeight={600}>{value}</text>;
-};
-const CustomPieLabel=({cx,cy,midAngle,innerRadius,outerRadius,value,percent})=>{
-  if(percent<0.04) return null;
-  const R=Math.PI/180,r=innerRadius+(outerRadius-innerRadius)*0.5;
-  const x=cx+r*Math.cos(-midAngle*R),y=cy+r*Math.sin(-midAngle*R);
-  return <text x={x} y={y} fill="#fff" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={700}>{value}</text>;
-};
+/* =========================
+   APP
+========================= */
 
-const KCard=({val,label,sub,color="#3b82f6",pct})=>(
-  <div style={{background:"#1a1f35",border:`1px solid ${color}44`,borderRadius:10,padding:"14px 18px",flex:1,minWidth:140}}>
-    <div style={{fontSize:28,fontWeight:800,color,lineHeight:1,marginBottom:4}}>{val}</div>
-    <div style={{fontSize:11,color:"#8b92a9",textTransform:"uppercase",letterSpacing:".5px",marginBottom:2}}>{label}</div>
-    {pct&&<div style={{fontSize:11,color:"#8b92a9"}}>{pct}</div>}
-    {sub&&<div style={{fontSize:11,color:"#8b92a9"}}>{sub}</div>}
-  </div>
-);
-
-const SCard=({title,sub,children,style={}})=>(
-  <div style={{background:"#161b2e",border:"1px solid #2d3148",borderRadius:10,padding:"16px 20px",...style}}>
-    {title&&<div style={{fontWeight:700,color:"#e8eaf0",fontSize:13,marginBottom:sub?2:12}}>{title}</div>}
-    {sub&&<div style={{fontSize:11,color:"#8b92a9",marginBottom:12}}>{sub}</div>}
-    {children}
-  </div>
-);
-
-const Tag=({active,onClick,children})=>(
-  <button onClick={onClick} style={{background:active?"#3b82f6":"#1e2130",border:`1px solid ${active?"#3b82f6":"#2d3148"}`,color:active?"#fff":"#8b92a9",borderRadius:20,padding:"5px 14px",fontSize:12,fontWeight:active?600:400,display:"flex",alignItems:"center",gap:6,whiteSpace:"nowrap"}}>
-    {children}
-  </button>
-);
-
-function App() {
-  const [tab,setTab]=useState("funnel");
-  const [data,setData]=useState([]);
-  const [st,setSt]=useState("idle");
-  const [mock,setMock]=useState(true);
-  const [cd,setCd]=useState(POLL);
-  const [last,setLast]=useState(null);
-  const [srch,setSrch]=useState("");
-  const [fSt,setFSt]=useState("Tất cả");
-  const [fTs,setFTs]=useState("Tất cả");
-  const [fTinh,setFTinh]=useState("Tất cả");
-  const [sCol,setSCol]=useState("created_at");
-  const [sDir,setSDir]=useState("desc");
-  const [pg,setPg]=useState(1);
-  const [aiTxt,setAiTxt]=useState("");
-  const [aiLd,setAiLd]=useState(false);
-  const timerRef=useRef(); const cdRef=useRef(); const fileRef=useRef();
-  const PAGE=10;
-
-  const active=mock?MOCK:data;
-  const total=active.length;
-  const byStatus=["Mới","Tiếp cận","Quan tâm","Xét Học bạ","Fail"].map(s=>({name:s,v:active.filter(x=>x.status===s).length}));
-  const xhb=active.filter(x=>x.status==="Xét Học bạ").length;
-  const tiepcan=active.filter(x=>x.status==="Tiếp cận").length;
-  const fail=active.filter(x=>x.status==="Fail").length;
-  const byTinh=Object.entries(active.reduce((a,x)=>{if(x.province)a[x.province]=(a[x.province]||0)+1;return a;},{})).map(([k,v])=>({name:k,value:v})).sort((a,b)=>b.value-a.value);
-  const byKenh=Object.entries(active.reduce((a,x)=>{if(x.kenh)a[x.kenh]=(a[x.kenh]||0)+1;return a;},{})).map(([k,v])=>({name:k,total:v,xhb:active.filter(x=>x.kenh===k&&x.status==="Xét Học bạ").length}));
-  const byMajor=Object.entries(active.reduce((a,x)=>{if(x.major)a[x.major]=(a[x.major]||0)+1;return a;},{})).map(([k])=>({name:k,avg:active.filter(x=>x.major===k).reduce((s,x)=>s+(x.diem_tbm||0),0)/Math.max(1,active.filter(x=>x.major===k).length)})).sort((a,b)=>b.avg-a.avg).slice(0,10);
-  const byTo=["Tổ 1","Tổ 2","Tổ 3","Tổ 4","Tổ 5"].map(t=>({name:t,total:active.filter(x=>x.telesales===t).length,xhb:active.filter(x=>x.telesales===t&&x.status==="Xét Học bạ").length}));
-  const diemTBM=active.filter(x=>x.diem_tbm).map(x=>x.diem_tbm);
-  const diemTH=active.filter(x=>x.diem_tohop).map(x=>x.diem_tohop);
-  const diemDGNL=active.filter(x=>x.diem_dgnl).map(x=>x.diem_dgnl);
-  const avgTBM=diemTBM.length?(diemTBM.reduce((a,b)=>a+b,0)/diemTBM.length).toFixed(2):0;
-  const avgTH=diemTH.length?(diemTH.reduce((a,b)=>a+b,0)/diemTH.length).toFixed(2):0;
-  const avgDGNL=diemDGNL.length?(diemDGNL.reduce((a,b)=>a+b,0)/diemDGNL.length).toFixed(0):0;
-  const noCCCD=active.filter(x=>!x.cccd).length;
-  const noEmail=active.filter(x=>!x.email).length;
-  const tbmHist=[{r:"6.0-6.5",v:diemTBM.filter(x=>x>=6&&x<6.5).length},{r:"6.5-7.0",v:diemTBM.filter(x=>x>=6.5&&x<7).length},{r:"7.0-7.5",v:diemTBM.filter(x=>x>=7&&x<7.5).length},{r:"7.5-8.0",v:diemTBM.filter(x=>x>=7.5&&x<8).length},{r:"8.0-8.5",v:diemTBM.filter(x=>x>=8&&x<8.5).length},{r:"8.5+",v:diemTBM.filter(x=>x>=8.5).length}];
-  const thHist=[{r:"18-20",v:diemTH.filter(x=>x>=18&&x<20).length},{r:"20-22",v:diemTH.filter(x=>x>=20&&x<22).length},{r:"22-24",v:diemTH.filter(x=>x>=22&&x<24).length},{r:"24-26",v:diemTH.filter(x=>x>=24&&x<26).length},{r:"26-28",v:diemTH.filter(x=>x>=26&&x<28).length},{r:"28+",v:diemTH.filter(x=>x>=28).length}];
-  const radarData=byMajor.slice(0,6).map(m=>({subject:m.name,TBM:m.avg}));
-
-  const doFetch=useCallback(async()=>{
-    setSt("loading");
-    try {
-      const res=await apiFetch("data_customer");
-      const rows=res?.data||res?.result||res?.records||res?.list||[];
-      setData(Array.isArray(rows)?rows:[]);
-      setSt(Array.isArray(rows)&&rows.length>0?"ok":"empty");
-      setLast(new Date()); setCd(POLL);
-    } catch(e){setSt("cors");}
-  },[]);
-
-  useEffect(()=>{
-    if(!mock){doFetch();timerRef.current=setInterval(doFetch,POLL*1000);}
-    else{setSt("ok");clearInterval(timerRef.current);}
-    return()=>clearInterval(timerRef.current);
-  },[mock]);
-
-  useEffect(()=>{
-    clearInterval(cdRef.current);
-    if(!mock&&st==="ok") cdRef.current=setInterval(()=>setCd(c=>c<=1?POLL:c-1),1000);
-    return()=>clearInterval(cdRef.current);
-  },[st,mock]);
-
-  const tinhL=["Tất cả",...[...new Set(active.map(d=>d.province).filter(Boolean))]];
-  const tsL=["Tất cả",...[...new Set(active.map(d=>d.telesales).filter(Boolean))]];
-  const stL=["Tất cả",...[...new Set(active.map(d=>d.status).filter(Boolean))]];
-  const filtered=active.filter(d=>{
-    const q=srch.toLowerCase();
-    return(!q||String(d.name||"").toLowerCase().includes(q)||String(d.phone||"").includes(q))
-      &&(fTinh==="Tất cả"||d.province===fTinh)&&(fTs==="Tất cả"||d.telesales===fTs)&&(fSt==="Tất cả"||d.status===fSt);
-  }).sort((a,b)=>sDir==="asc"?String(a[sCol]||"").localeCompare(String(b[sCol]||"")):String(b[sCol]||"").localeCompare(String(a[sCol]||"")));
-  const pages=Math.max(1,Math.ceil(filtered.length/PAGE));
-  const paged=filtered.slice((pg-1)*PAGE,pg*PAGE);
-  const doSort=c=>{if(sCol===c)setSDir(d=>d==="asc"?"desc":"asc");else{setSCol(c);setSDir("asc");}};
-  const sc=s=>s==="Xét Học bạ"?"#10b981":s==="Tiếp cận"?"#f59e0b":s==="Quan tâm"?"#8b5cf6":s==="Fail"?"#ef4444":"#3b82f6";
-
-  const handleAI=async()=>{
-    setAiLd(true);setAiTxt("");
-    const sum=`Tổng hồ sơ:${total},XHB:${xhb}(${total?((xhb/total)*100).toFixed(1):0}%),Fail:${fail},TBM TB:${avgTBM},Thiếu CCCD:${noCCCD},Thiếu Email:${noEmail},Tỉnh đầu:${byTinh[0]?.name}`;
-    try{
-      const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:"Chuyên gia phân tích tuyển sinh. Phân tích: 1)Tổng quan phễu, 2)Cảnh báo dữ liệu, 3)Đề xuất. Tiếng Việt, emoji.",messages:[{role:"user",content:`Phân tích: ${sum}`}]})});
-      const d=await r.json();setAiTxt(d.content?.[0]?.text||"Không có phản hồi.");
-    }catch{setAiTxt("Lỗi kết nối AI.");}
-    setAiLd(false);
-  };
-
-  const tabs=[{id:"funnel",label:"TIẾN TRÌNH",icon:"①"},{id:"kenh",label:"KÊNH TUYỂN SINH",icon:"②"},{id:"diem",label:"ĐIỂM SỐ & NGÀNH",icon:"③"},{id:"dialy",label:"ĐỊA LÝ & TRƯỜNG",icon:"④"},{id:"phanloai",label:"PHÂN TÍCH 3 LOẠI ĐIỂM",icon:"⑤"}];
-  const thS={color:"#8b92a9",fontWeight:600,padding:"7px 10px",textAlign:"left",fontSize:10,textTransform:"uppercase",borderBottom:"1px solid #2d3148",cursor:"pointer",whiteSpace:"nowrap"};
-  const tdS={padding:"6px 10px",color:"#c8cde0",verticalAlign:"middle",fontSize:11};
+function App(){
 
   return (
-    <div style={{minHeight:"100vh",background:"#0e1117"}}>
-      {/* Header */}
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"18px 24px 0",flexWrap:"wrap",gap:12}}>
-        <div>
-          <h1 style={{fontSize:22,fontWeight:800,color:"#fff",lineHeight:1.2}}>
-            Phân tích <span style={{color:"#3b82f6"}}>Chuyên sâu</span><br/>Dữ liệu Thí sinh 2026
-          </h1>
-          <div style={{fontSize:11,color:"#8b92a9",marginTop:6}}>
-            ĐH Hùng Vương TP.HCM
-            {st==="ok"&&!mock&&<span style={{color:"#10b981",marginLeft:8}}>● Live · {cd}s</span>}
-            {mock&&<span style={{color:"#8b5cf6",marginLeft:8}}>● Demo mode</span>}
-            {st==="cors"&&!mock&&<span style={{color:"#ef4444",marginLeft:8}}>● Bảo trì</span>}
-          </div>
-        </div>
-        <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
-          <div style={{background:"#1e2130",border:"1px solid #2d3148",borderRadius:8,padding:"6px 14px",textAlign:"center"}}>
-            <div style={{fontSize:16,fontWeight:700,color:"#3b82f6"}}>{total.toLocaleString()}</div>
-            <div style={{fontSize:10,color:"#8b92a9"}}>hồ sơ</div>
-          </div>
-          <div style={{background:"#1e2130",border:"1px solid #2d3148",borderRadius:8,padding:"6px 14px",textAlign:"center"}}>
-            <div style={{fontSize:16,fontWeight:700,color:"#10b981"}}>{byTinh.length}</div>
-            <div style={{fontSize:10,color:"#8b92a9"}}>tỉnh/thành</div>
-          </div>
-          <div style={{background:"#1e2130",border:"1px solid #2d3148",borderRadius:8,padding:"6px 14px",textAlign:"center"}}>
-            <div style={{fontSize:16,fontWeight:700,color:"#f59e0b"}}>{[...new Set(active.map(x=>x.major).filter(Boolean))].length}</div>
-            <div style={{fontSize:10,color:"#8b92a9"}}>ngành</div>
-          </div>
-          {mock
-            ?<button onClick={()=>{setMock(false);doFetch();}} style={{background:"#3b82f633",border:"1px solid #3b82f6",color:"#3b82f6",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:600}}>← API thật</button>
-            :<button onClick={()=>setMock(true)} style={{background:"#8b5cf633",border:"1px solid #8b5cf6",color:"#8b5cf6",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:600}}>Demo</button>
-          }
-          {!mock&&<button onClick={doFetch} style={{background:"#1e2130",border:"1px solid #2d3148",color:"#c8cde0",borderRadius:6,padding:"6px 12px",fontSize:12}}>↻</button>}
-          <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" style={{display:"none"}} onChange={e=>{if(e.target.files[0]){setMock(true);setTab("funnel");}}}/>
-          <button onClick={()=>fileRef.current.click()} style={{background:"#3b82f6",border:"none",color:"#fff",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:600}}>+ Upload</button>
-        </div>
-      </div>
+    <div style={{padding:20}}>
+      <h1>CRM Dashboard</h1>
 
-      {/* Tabs */}
-      <div style={{display:"flex",gap:8,padding:"14px 24px",overflowX:"auto",borderBottom:"1px solid #2d3148"}}>
-        {tabs.map(t=><Tag key={t.id} active={tab===t.id} onClick={()=>setTab(t.id)}><span>{t.icon}</span>{t.label}</Tag>)}
-        <Tag active={tab==="data"} onClick={()=>setTab("data")}><span>📋</span>DỮ LIỆU</Tag>
-
-      </div>
-
-      <div style={{padding:"16px 24px"}}>
-
-      {/* PHỄU */}
-      {tab==="funnel"&&<div>
-        <div style={{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}}>
-          <KCard val={total.toLocaleString()} label="TỔNG HỒ SƠ" color="#3b82f6"/>
-          <KCard val={xhb.toLocaleString()} label="XÉT HỌC BẠ" pct={`${total?((xhb/total)*100).toFixed(1):0}% tổng hồ sơ`} color="#10b981"/>
-          <KCard val={tiepcan.toLocaleString()} label="ĐANG TIẾP CẬN" pct={`${total?((tiepcan/total)*100).toFixed(1):0}% tổng hồ sơ`} color="#f59e0b"/>
-          <KCard val={fail.toLocaleString()} label="FAIL" pct={`${total?((fail/total)*100).toFixed(1):0}% tổng hồ sơ`} color="#ef4444"/>
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}}>
-          <SCard title="Phễu Chuyển đổi Tuyển sinh" sub="Số lượng thí sinh tại từng giai đoạn">
-            {byStatus.map((s,i)=>{
-              const pct=total?((s.v/total)*100).toFixed(1):0;
-              return<div key={i} style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-                <span style={{width:80,fontSize:12,color:"#8b92a9",textAlign:"right",flexShrink:0}}>{s.name}</span>
-                <div style={{flex:1,background:"#2d3148",borderRadius:4,height:28,overflow:"hidden",position:"relative"}}>
-                  <div style={{width:pct+"%",height:"100%",background:C1[i],borderRadius:4,transition:"width .5s"}}/>
-                  <span style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",color:"#fff",fontSize:12,fontWeight:700}}>{s.v.toLocaleString()}</span>
-                </div>
-                <span style={{fontSize:12,fontWeight:600,color:C1[i],minWidth:50,textAlign:"right"}}>{s.v.toLocaleString()}</span>
-                <span style={{fontSize:11,color:"#8b92a9",minWidth:38,textAlign:"right"}}>{pct}%</span>
-              </div>;
-            })}
-
-          </SCard>
-          <SCard title="XHB theo Tổ tư vấn" sub="Số hồ sơ đang Xét Học bạ của từng Tổ">
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={byTo} margin={{top:20,right:20,left:-20,bottom:0}}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2d3148"/>
-                <XAxis dataKey="name" tick={{fill:"#8b92a9",fontSize:11}} axisLine={false} tickLine={false}/>
-                <YAxis tick={{fill:"#8b92a9",fontSize:11}} axisLine={false} tickLine={false}/>
-                <Tooltip {...TT}/>
-                <Bar dataKey="xhb" fill="#10b981" radius={[4,4,0,0]} name="Xét Học bạ"><LabelList dataKey="xhb" content={CustomBarLabel}/></Bar>
-              </BarChart>
-            </ResponsiveContainer>
-            <div style={{display:"flex",flexWrap:"wrap",gap:"4px 12px",justifyContent:"center",marginTop:4}}>
-              {byTo.map((t,i)=><span key={i} style={{fontSize:11,color:"#8b92a9"}}>{t.name}: <strong style={{color:"#10b981"}}>{t.xhb}</strong></span>)}
-            </div>
-          </SCard>
-        </div>
-        <SCard title="Tiến trình theo Tổ tư vấn" sub="Số lượng từng giai đoạn theo từng Tổ">
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={byTo.map(t=>({
-              name:t.name,
-              "Mới":active.filter(x=>x.telesales===t.name&&x.status==="Mới").length,
-              "Tiếp cận":active.filter(x=>x.telesales===t.name&&x.status==="Tiếp cận").length,
-              "Quan tâm":active.filter(x=>x.telesales===t.name&&x.status==="Quan tâm").length,
-              "XHB":active.filter(x=>x.telesales===t.name&&x.status==="Xét Học bạ").length,
-              "Fail":active.filter(x=>x.telesales===t.name&&x.status==="Fail").length,
-            }))} margin={{top:20,right:10,left:-20,bottom:0}} barCategoryGap="20%" barGap={2}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2d3148"/>
-              <XAxis dataKey="name" tick={{fill:"#8b92a9",fontSize:11}} axisLine={false} tickLine={false}/>
-              <YAxis tick={{fill:"#8b92a9",fontSize:11}} axisLine={false} tickLine={false}/>
-              <Tooltip {...TT}/>
-              <Bar dataKey="Mới"      fill="#3b82f6" radius={[3,3,0,0]}><LabelList dataKey="Mới"      content={CustomBarLabel}/></Bar>
-              <Bar dataKey="Tiếp cận" fill="#f59e0b" radius={[3,3,0,0]}><LabelList dataKey="Tiếp cận" content={CustomBarLabel}/></Bar>
-              <Bar dataKey="Quan tâm" fill="#8b5cf6" radius={[3,3,0,0]}><LabelList dataKey="Quan tâm" content={CustomBarLabel}/></Bar>
-              <Bar dataKey="XHB"      fill="#10b981" radius={[3,3,0,0]}><LabelList dataKey="XHB"      content={CustomBarLabel}/></Bar>
-              <Bar dataKey="Fail"     fill="#ef4444" radius={[3,3,0,0]}><LabelList dataKey="Fail"     content={CustomBarLabel}/></Bar>
-            </BarChart>
-          </ResponsiveContainer>
-          <div style={{display:"flex",flexWrap:"wrap",gap:"4px 12px",justifyContent:"center",marginTop:6}}>
-            {[["Mới","#3b82f6"],["Tiếp cận","#f59e0b"],["Quan tâm","#8b5cf6"],["XHB","#10b981"],["Fail","#ef4444"]].map(([l,c])=>(
-              <span key={l} style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#8b92a9"}}><span style={{width:8,height:8,borderRadius:2,background:c,display:"inline-block"}}/>{l}</span>
-            ))}
-          </div>
-          {/* Bảng tóm tắt */}
-          <div style={{overflowX:"auto",marginTop:14}}>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
-              <thead>
-                <tr style={{background:"#0e1117"}}>
-                  {["Tổ","Tổng","Mới","Tiếp cận","Quan tâm","XHB","Fail","% XHB"].map(h=>(
-                    <th key={h} style={{padding:"6px 10px",color:"#8b92a9",fontWeight:600,textAlign:"center",borderBottom:"1px solid #2d3148"}}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {byTo.map((t,i)=>{
-                  const moi=active.filter(x=>x.telesales===t.name&&x.status==="Mới").length;
-                  const tc=active.filter(x=>x.telesales===t.name&&x.status==="Tiếp cận").length;
-                  const qt=active.filter(x=>x.telesales===t.name&&x.status==="Quan tâm").length;
-                  const fail=active.filter(x=>x.telesales===t.name&&x.status==="Fail").length;
-                  const pct=t.total?((t.xhb/t.total)*100).toFixed(1):0;
-                  return(
-                    <tr key={i} style={{borderBottom:"1px solid #1a1f35",background:i%2===0?"transparent":"#111620",textAlign:"center"}}>
-                      <td style={{padding:"6px 10px",color:"#e8eaf0",fontWeight:600}}>{t.name}</td>
-                      <td style={{padding:"6px 10px",color:"#c8cde0"}}>{t.total}</td>
-                      <td style={{padding:"6px 10px",color:"#3b82f6",fontWeight:600}}>{moi}</td>
-                      <td style={{padding:"6px 10px",color:"#f59e0b",fontWeight:600}}>{tc}</td>
-                      <td style={{padding:"6px 10px",color:"#8b5cf6",fontWeight:600}}>{qt}</td>
-                      <td style={{padding:"6px 10px",color:"#10b981",fontWeight:700}}>{t.xhb}</td>
-                      <td style={{padding:"6px 10px",color:"#ef4444",fontWeight:600}}>{fail}</td>
-                      <td style={{padding:"6px 10px"}}><span style={{background:"#10b98122",color:"#10b981",borderRadius:4,padding:"2px 8px",fontWeight:700}}>{pct}%</span></td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </SCard>
-      </div>}
-
-      {/* KÊNH */}
-      {tab==="kenh"&&<div>
-        <div style={{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}}>
-          <KCard val={`${total?((active.filter(x=>x.cccd).length/total)*100).toFixed(1):0}%`} label="CÓ CCCD" color="#3b82f6"/>
-          <KCard val={`${total?((noCCCD/total)*100).toFixed(1):0}%`} label="THIẾU CCCD" color="#ef4444"/>
-          <KCard val={`${total?((active.filter(x=>x.email).length/total)*100).toFixed(1):0}%`} label="CÓ EMAIL" color="#10b981"/>
-          <KCard val={`${total?((noEmail/total)*100).toFixed(1):0}%`} label="THIẾU EMAIL" color="#f59e0b"/>
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-          <SCard title="Nguồn cấp 1 – Hiệu quả tuyển sinh" sub="Tổng hồ sơ và XHB theo kênh">
-            <ResponsiveContainer width="100%" height={240}>
-              <ComposedChart data={byKenh} margin={{top:20,right:30,left:-20,bottom:40}}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2d3148"/>
-                <XAxis dataKey="name" tick={{fill:"#8b92a9",fontSize:9,angle:-30,textAnchor:"end"}} axisLine={false} tickLine={false}/>
-                <YAxis yAxisId="left" tick={{fill:"#8b92a9",fontSize:10}} axisLine={false} tickLine={false}/>
-                <Tooltip {...TT}/>
-                <Bar yAxisId="left" dataKey="total" fill="#2d3a5a" radius={[3,3,0,0]} name="Tổng"><LabelList dataKey="total" content={CustomBarLabel}/></Bar>
-                <Bar yAxisId="left" dataKey="xhb" fill="#10b981" radius={[3,3,0,0]} name="XHB"><LabelList dataKey="xhb" content={CustomBarLabel}/></Bar>
-              </ComposedChart>
-            </ResponsiveContainer>
-          </SCard>
-          <SCard title="Nguồn cấp 1 – Phân bổ hồ sơ" sub="Tỷ trọng từng kênh">
-            <ResponsiveContainer width="100%" height={260}>
-              <PieChart>
-                <Pie data={byKenh} cx="40%" cy="45%" innerRadius={65} outerRadius={105} dataKey="total" nameKey="name" labelLine={false} label={CustomPieLabel}>
-                  {byKenh.map((_,i)=><Cell key={i} fill={C1[i]}/>)}
-                </Pie>
-                <Tooltip {...TT}/>
-              </PieChart>
-            </ResponsiveContainer>
-            <div style={{display:"flex",flexWrap:"wrap",gap:"4px 12px",justifyContent:"center"}}>
-              {byKenh.map((k,i)=><span key={i} style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#8b92a9"}}><span style={{width:8,height:8,borderRadius:2,background:C1[i],display:"inline-block"}}/>{k.name}</span>)}
-            </div>
-          </SCard>
-        </div>
-      </div>}
-
-      {/* ĐIỂM */}
-      {tab==="diem"&&<div>
-        <div style={{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}}>
-          <KCard val={avgTBM} label="TBM TRUNG BÌNH" sub="Thang 0-10" color="#3b82f6"/>
-          <KCard val={avgTH} label="TỔ HỢP TB" sub="Thang 0-30" color="#10b981"/>
-          <KCard val={avgDGNL} label="ĐGNL TB" sub="Thang 0-1200" color="#8b5cf6"/>
-          <KCard val={diemTBM.length} label="CÓ ĐIỂM TBM" color="#f59e0b"/>
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"2fr 1fr",gap:14}}>
-          <SCard title="Điểm TBM Trung bình theo Ngành (Top 10)" sub="Điểm trung bình môn từng ngành">
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={byMajor} layout="vertical" margin={{top:0,right:60,left:100,bottom:0}}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2d3148" horizontal={false}/>
-                <XAxis type="number" domain={[6,11]} tick={{fill:"#8b92a9",fontSize:10}} axisLine={false} tickLine={false}/>
-                <YAxis dataKey="name" type="category" tick={{fill:"#8b92a9",fontSize:10}} axisLine={false} tickLine={false} width={95}/>
-                <Tooltip {...TT}/>
-                <Bar dataKey="avg" radius={[0,4,4,0]} name="Điểm TBM">
-                  <LabelList dataKey="avg" position="insideRight" formatter={v=>Number(v).toFixed(2)} style={{fill:"#fff",fontSize:11,fontWeight:700}}/>
-                  {byMajor.map((_,i)=><Cell key={i} fill={i===0?"#ef4444":i===byMajor.length-1?"#10b981":"#3b82f6"}/>)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </SCard>
-          <SCard title="So sánh điểm theo Ngành" sub="Radar TBM từng ngành">
-            <ResponsiveContainer width="100%" height={280}>
-              <RadarChart data={radarData} margin={{top:10,right:30,left:30,bottom:10}}>
-                <PolarGrid stroke="#2d3148"/>
-                <PolarAngleAxis dataKey="subject" tick={({x,y,payload,cx,cy})=>{
-                  const val=radarData.find(d=>d.subject===payload.value)?.TBM;
-                  return<g>
-                    <text x={x} y={y} textAnchor={x>cx?"start":x<cx?"end":"middle"} dominantBaseline="central" fill="#8b92a9" fontSize={10}>{payload.value}</text>
-                    <text x={x} y={y+13} textAnchor={x>cx?"start":x<cx?"end":"middle"} dominantBaseline="central" fill="#f59e0b" fontSize={11} fontWeight={700}>{val?Number(val).toFixed(2):""}</text>
-                  </g>;
-                }}/>
-                <Radar name="TBM" dataKey="TBM" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.35} dot={{fill:"#3b82f6",r:4}}/>
-                <Tooltip {...TT} formatter={v=>Number(v).toFixed(2)}/>
-              </RadarChart>
-            </ResponsiveContainer>
-          </SCard>
-        </div>
-      </div>}
-
-      {/* ĐỊA LÝ */}
-      {tab==="dialy"&&<div>
-        <div style={{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}}>
-          <KCard val={byTinh[0]?.value?.toLocaleString()||0} label={byTinh[0]?.name||"TP.HCM"} pct={`${total?((byTinh[0]?.value||0)/total*100).toFixed(1):0}% tổng`} color="#3b82f6"/>
-          <KCard val={byTinh[1]?.value?.toLocaleString()||0} label={byTinh[1]?.name||""} pct="Đứng thứ 2" color="#10b981"/>
-          <KCard val={byTinh[2]?.value?.toLocaleString()||0} label={byTinh[2]?.name||""} pct="Đứng thứ 3" color="#f59e0b"/>
-          <KCard val={byTinh.length} label="TỈNH/THÀNH PHỐ" color="#8b5cf6"/>
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-          <SCard title="Phân bổ theo Tỉnh/Thành phố" sub="Top 10 tỉnh thành">
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={byTinh.slice(0,10)} layout="vertical" margin={{top:0,right:50,left:90,bottom:0}}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2d3148" horizontal={false}/>
-                <XAxis type="number" tick={{fill:"#8b92a9",fontSize:10}} axisLine={false} tickLine={false}/>
-                <YAxis dataKey="name" type="category" tick={{fill:"#8b92a9",fontSize:10}} axisLine={false} tickLine={false}/>
-                <Tooltip {...TT}/>
-                <Bar dataKey="value" radius={[0,4,4,0]} name="Hồ sơ">
-                  <LabelList dataKey="value" position="right" style={{fill:"#e8eaf0",fontSize:11,fontWeight:600}}/>
-                  {byTinh.slice(0,10).map((_,i)=><Cell key={i} fill={C1[i%10]}/>)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </SCard>
-          <SCard title="Top 8 Tỉnh – Tỷ trọng hồ sơ" sub="Phần trăm theo tỉnh thành">
-            <ResponsiveContainer width="100%" height={280}>
-              <PieChart>
-                <Pie data={byTinh.slice(0,8)} cx="40%" cy="45%" innerRadius={60} outerRadius={105} dataKey="value" nameKey="name" labelLine={false} label={CustomPieLabel}>
-                  {byTinh.slice(0,8).map((_,i)=><Cell key={i} fill={C1[i]}/>)}
-                </Pie>
-                <Tooltip {...TT}/>
-              </PieChart>
-            </ResponsiveContainer>
-            <div style={{display:"flex",flexWrap:"wrap",gap:"4px 10px",justifyContent:"center"}}>
-              {byTinh.slice(0,8).map((t,i)=><span key={i} style={{display:"flex",alignItems:"center",gap:4,fontSize:10,color:"#8b92a9"}}><span style={{width:7,height:7,borderRadius:2,background:C1[i],display:"inline-block"}}/>{t.name}</span>)}
-            </div>
-          </SCard>
-        </div>
-      </div>}
-
-      {/* PHÂN TÍCH 3 LOẠI ĐIỂM */}
-      {tab==="phanloai"&&<div>
-        <div style={{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}}>
-          <KCard val={diemTBM.length.toLocaleString()} label="CÓ ĐIỂM TBM" pct={`${total?((diemTBM.length/total)*100).toFixed(1):0}%`} color="#3b82f6"/>
-          <KCard val={diemTH.length.toLocaleString()} label="CÓ TỔ HỢP" pct={`${total?((diemTH.length/total)*100).toFixed(1):0}%`} color="#10b981"/>
-          <KCard val={diemDGNL.length.toLocaleString()} label="CÓ ĐGNL" pct={`${total?((diemDGNL.length/total)*100).toFixed(1):0}%`} color="#8b5cf6"/>
-          <KCard val={avgDGNL} label="TB ĐIỂM ĐGNL" color="#f59e0b"/>
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginBottom:14}}>
-          <SCard title="Điểm TBM (Học bạ)" sub={`Trung bình: ${avgTBM} · Thang 0-10`}>
-            <ResponsiveContainer width="100%" height={180}>
-              <BarChart data={tbmHist} margin={{top:20,right:0,left:-25,bottom:0}}>
-                <XAxis dataKey="r" tick={{fill:"#8b92a9",fontSize:9}} axisLine={false} tickLine={false}/>
-                <YAxis tick={{fill:"#8b92a9",fontSize:9}} axisLine={false} tickLine={false}/>
-                <Tooltip {...TT}/>
-                <Bar dataKey="v" name="Thí sinh"><LabelList dataKey="v" content={CustomBarLabel}/>{tbmHist.map((_,i)=><Cell key={i} fill={["#ef4444","#f59e0b","#10b981","#3b82f6","#8b5cf6","#06b6d4"][i]}/>)}</Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </SCard>
-          <SCard title="Điểm Tổ hợp môn" sub={`Trung bình: ${avgTH} · Thang 0-30`}>
-            <ResponsiveContainer width="100%" height={180}>
-              <BarChart data={thHist} margin={{top:20,right:0,left:-25,bottom:0}}>
-                <XAxis dataKey="r" tick={{fill:"#8b92a9",fontSize:9}} axisLine={false} tickLine={false}/>
-                <YAxis tick={{fill:"#8b92a9",fontSize:9}} axisLine={false} tickLine={false}/>
-                <Tooltip {...TT}/>
-                <Bar dataKey="v" name="Thí sinh"><LabelList dataKey="v" content={CustomBarLabel}/>{thHist.map((_,i)=><Cell key={i} fill={["#ef4444","#f59e0b","#10b981","#3b82f6","#8b5cf6","#06b6d4"][i]}/>)}</Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </SCard>
-          <SCard title="Điểm ĐGNL" sub={`Trung bình: ${avgDGNL} · Thang 0-1200`}>
-            {[["< 650","#ef4444",[0,650]],[" 650-750","#f59e0b",[650,750]],["750-850","#10b981",[750,850]],["850+","#3b82f6",[850,9999]]].map(([r,c,range],i)=>{
-              const cnt=diemDGNL.filter(x=>x>=range[0]&&x<range[1]).length;
-              const pct=diemDGNL.length?((cnt/diemDGNL.length)*100).toFixed(0):0;
-              return<div key={i} style={{display:"flex",alignItems:"center",gap:8,marginTop:10}}>
-                <span style={{width:60,fontSize:11,color:"#8b92a9",flexShrink:0}}>{r}</span>
-                <div style={{flex:1,background:"#2d3148",borderRadius:3,height:22,overflow:"hidden",position:"relative"}}>
-                  <div style={{width:pct+"%",height:"100%",background:c,borderRadius:3}}/>
-                  <span style={{position:"absolute",left:8,top:"50%",transform:"translateY(-50%)",color:"#fff",fontSize:11,fontWeight:700}}>{cnt}</span>
-                </div>
-                <span style={{fontSize:10,color:"#8b92a9",minWidth:28,textAlign:"right"}}>{pct}%</span>
-              </div>;
-            })}
-          </SCard>
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 2fr",gap:14}}>
-          <SCard title="Tỷ lệ phổ theo phương thức xét tuyển">
-            <ResponsiveContainer width="100%" height={180}>
-              <BarChart data={[{name:"Điểm TBM",co:diemTBM.length,k:total-diemTBM.length},{name:"Tổ hợp",co:diemTH.length,k:total-diemTH.length},{name:"ĐGNL",co:diemDGNL.length,k:total-diemDGNL.length}]} margin={{top:20,right:0,left:-20,bottom:0}}>
-                <XAxis dataKey="name" tick={{fill:"#8b92a9",fontSize:10}} axisLine={false} tickLine={false}/>
-                <YAxis tick={{fill:"#8b92a9",fontSize:10}} axisLine={false} tickLine={false}/>
-                <Tooltip {...TT}/>
-                <Bar dataKey="co" fill="#3b82f6" name="Có điểm" stackId="a"><LabelList dataKey="co" content={CustomBarLabel}/></Bar>
-                <Bar dataKey="k" fill="#2d3148" name="Không có" stackId="a"/>
-              </BarChart>
-            </ResponsiveContainer>
-          </SCard>
-          <SCard title="Điểm TBM: XHB và Không XHB" sub="So sánh điểm trung bình 2 nhóm">
-            <div style={{display:"flex",gap:12,marginTop:8}}>
-              {[{g:"Có XHB",c:"#10b981"},{g:"Không XHB",c:"#ef4444"}].map((g,i)=>{
-                const group=active.filter(x=>x.xhb===g.g&&x.diem_tbm);
-                const avg=group.length?(group.reduce((a,x)=>a+(x.diem_tbm||0),0)/group.length).toFixed(2):0;
-                return<div key={i} style={{flex:1,background:"#1a2540",border:`1px solid ${g.c}44`,borderRadius:8,padding:"20px",textAlign:"center"}}>
-                  <div style={{fontSize:36,fontWeight:800,color:g.c}}>{avg}</div>
-                  <div style={{fontSize:12,color:"#8b92a9",marginTop:6}}>{g.g}</div>
-                  <div style={{fontSize:11,color:"#8b92a9"}}>{group.length} thí sinh</div>
-                </div>;
-              })}
-            </div>
-          </SCard>
-        </div>
-      </div>}
-
-      {/* AI */}
-      {tab==="ai"&&<div style={{maxWidth:800}}>
-        <div style={{background:"#1a1f35",border:"1px solid #3b82f688",borderRadius:10,padding:"20px",marginBottom:14}}>
-          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
-            <span style={{fontSize:28}}>🤖</span>
-            <div>
-              <div style={{fontWeight:700,color:"#e8eaf0",fontSize:15}}>AI Insight — Phân tích Chuyên sâu</div>
-              <div style={{fontSize:11,color:"#8b92a9",marginTop:2}}>{total.toLocaleString()} hồ sơ · Claude AI</div>
-            </div>
-          </div>
-          <button onClick={handleAI} disabled={aiLd} style={{background:aiLd?"#2d3148":"linear-gradient(135deg,#3b82f6,#8b5cf6)",border:"none",color:"#fff",borderRadius:8,padding:"11px 0",fontSize:14,fontWeight:600,width:"100%",opacity:aiLd?.7:1}}>
-            {aiLd?"⏳ Đang phân tích...":"✨ Phân tích ngay"}
-          </button>
-        </div>
-        {aiTxt&&<div style={{background:"#161b2e",border:"1px solid #2d3148",borderRadius:10,padding:"20px"}}>
-          <div style={{fontSize:12,color:"#3b82f6",fontWeight:700,marginBottom:12}}>🤖 Kết quả</div>
-          <div style={{fontSize:13,color:"#c8cde0",lineHeight:1.9,whiteSpace:"pre-wrap"}}>{aiTxt}</div>
-        </div>}
-      </div>}
-
-      {/* DATA */}
-      {tab==="data"&&<div>
-        <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"flex-end",marginBottom:10}}>
-          <div style={{flex:1,minWidth:160}}>
-            <div style={{fontSize:10,color:"#8b92a9",marginBottom:3}}>🔍 Tìm kiếm</div>
-            <input placeholder="Tên, SĐT..." value={srch} onChange={e=>{setSrch(e.target.value);setPg(1);}} style={{width:"100%"}}/>
-          </div>
-          {[[tinhL,fTinh,setFTinh,"🗺️ Tỉnh/Thành"],[stL,fSt,setFSt,"📌 Tiến trình"],[tsL,fTs,setFTs,"👤 Tổ tư vấn"]].map(([list,val,setter,label],i)=>(
-            <div key={i}>
-              <div style={{fontSize:10,color:"#8b92a9",marginBottom:3}}>{label}</div>
-              <select value={val} onChange={e=>{setter(e.target.value);setPg(1);}}>
-                {list.map(t=><option key={t}>{t}</option>)}
-              </select>
-            </div>
-          ))}
-          <span style={{fontSize:11,color:"#8b92a9",paddingBottom:6}}>{filtered.length} kết quả</span>
-        </div>
-        <div style={{background:"#161b2e",border:"1px solid #2d3148",borderRadius:10,overflow:"hidden"}}>
-          <div style={{overflowX:"auto"}}>
-            <table style={{width:"100%",borderCollapse:"collapse"}}>
-              <thead>
-                <tr style={{background:"#0e1117"}}>
-                  {[["name","Họ tên"],["phone","SĐT"],["province","Tỉnh"],["major","Ngành"],["status","Trạng thái"],["telesales","Tổ"],["diem_tbm","TBM"],["cccd","CCCD"],["email","Email"],["created_at","Ngày"]].map(([c,l])=>(
-                    <th key={c} onClick={()=>doSort(c)} style={thS}>{l}{sCol===c?(sDir==="asc"?" ↑":" ↓"):""}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {paged.length===0?<tr><td colSpan={10} style={{padding:"24px",textAlign:"center",color:"#8b92a9"}}>Không có dữ liệu</td></tr>
-                :paged.map((r,i)=>(
-                  <tr key={i} style={{borderBottom:"1px solid #1a1f35",background:i%2===0?"transparent":"#111620"}}>
-                    <td style={{...tdS,color:"#e8eaf0",fontWeight:500}}>{r.name||"—"}</td>
-                    <td style={tdS}>{r.phone||"—"}</td>
-                    <td style={tdS}>{r.province||"—"}</td>
-                    <td style={tdS}><span style={{background:"#2d3148",borderRadius:4,padding:"2px 7px",fontSize:10}}>{r.major||"—"}</span></td>
-                    <td style={tdS}><span style={{borderRadius:4,padding:"2px 6px",color:sc(r.status),background:sc(r.status)+"22",fontSize:10}}>{r.status||"—"}</span></td>
-                    <td style={tdS}>{r.telesales||"—"}</td>
-                    <td style={{...tdS,color:"#f59e0b",fontWeight:600}}>{r.diem_tbm?Number(r.diem_tbm).toFixed(2):"—"}</td>
-                    <td style={tdS}><span style={{color:r.cccd?"#10b981":"#ef4444",fontWeight:700}}>{r.cccd?"✓":"✗"}</span></td>
-                    <td style={tdS}><span style={{color:r.email?"#10b981":"#ef4444",fontWeight:700}}>{r.email?"✓":"✗"}</span></td>
-                    <td style={{...tdS,color:"#8b92a9"}}>{r.created_at||"—"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10}}>
-          <span style={{fontSize:11,color:"#8b92a9"}}>Trang {pg}/{pages} · {filtered.length} bản ghi</span>
-          <div style={{display:"flex",gap:4}}>
-            <button onClick={()=>setPg(p=>Math.max(1,p-1))} disabled={pg===1} style={{background:"#1e2130",border:"1px solid #2d3148",color:"#c8cde0",borderRadius:5,padding:"4px 10px",fontSize:12,opacity:pg===1?.4:1}}>‹</button>
-            {Array.from({length:Math.min(pages,7)},(_,i)=>i+1).map(p=>(
-              <button key={p} onClick={()=>setPg(p)} style={{background:p===pg?"#3b82f6":"#1e2130",border:`1px solid ${p===pg?"#3b82f6":"#2d3148"}`,color:p===pg?"#fff":"#c8cde0",borderRadius:5,padding:"4px 8px",fontSize:12,minWidth:28}}>{p}</button>
-            ))}
-            <button onClick={()=>setPg(p=>Math.min(pages,p+1))} disabled={pg===pages} style={{background:"#1e2130",border:"1px solid #2d3148",color:"#c8cde0",borderRadius:5,padding:"4px 10px",fontSize:12,opacity:pg===pages?.4:1}}>›</button>
-          </div>
-        </div>
-      </div>}
-
-      </div>
+      <p>
+        Dashboard đang chạy thành công 🚀
+      </p>
     </div>
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+ReactDOM.createRoot(
+  document.getElementById("root")
+).render(<App />);
+
 </script>
+
 </body>
 </html>
