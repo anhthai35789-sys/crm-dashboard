@@ -4,87 +4,31 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CRM Dashboard</title>
-
   <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
-
   <style>
-    body{
-      margin:0;
-      background:#0e1117;
-      color:white;
-      font-family:Segoe UI,sans-serif;
-    }
+    body { margin:0; background:#0e1117; color:white; font-family:'Segoe UI',sans-serif; }
+    * { box-sizing:border-box; }
   </style>
 </head>
 <body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback } = React;
+    const {
+      BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+      ResponsiveContainer, PieChart, Pie, Cell, RadarChart,
+      Radar, PolarGrid, PolarAngleAxis, ComposedChart,
+      LabelList, LineChart, Line
+    } = Recharts;
 
-<div id="root"></div>
+    // ← PASTE TOÀN BỘ NỘI DUNG BÊN TRONG App.jsx VÀO ĐÂY
+    // (từ sau phần import, giữ nguyên tất cả hàm và component)
 
-<script type="text/babel">
-
-const {
-  useState,
-  useEffect,
-  useRef,
-  useCallback
-} = React;
-
-const {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  RadarChart,
-  Radar,
-  PolarGrid,
-  PolarAngleAxis,
-  ComposedChart,
-  LabelList,
-  LineChart,
-  Line
-} = Recharts;
-
-/* =========================
-   ENV CONFIG
-========================= */
-
-const PROXY = "YOUR_PROXY";
-const KEY = "YOUR_KEY";
-const SECRET = "YOUR_SECRET";
-const PROJECT = "YOUR_PROJECT";
-
-/* =========================
-   APP
-========================= */
-
-function App(){
-
-  return (
-    <div style={{padding:20}}>
-      <h1>CRM Dashboard</h1>
-
-      <p>
-        Dashboard đang chạy thành công 🚀
-      </p>
-    </div>
-  );
-}
-
-ReactDOM.createRoot(
-  document.getElementById("root")
-).render(<App />);
-
-</script>
-
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
 </body>
 </html>
