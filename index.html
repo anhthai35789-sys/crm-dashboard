@@ -9,7 +9,6 @@
   <script src="https://cdn.jsdelivr.net/npm/prop-types@15.8.1/prop-types.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
   <style>
     body{margin:0;background:#0e1117;color:white;font-family:'Segoe UI',sans-serif;}
     *{box-sizing:border-box;}
@@ -17,146 +16,130 @@
 </head>
 <body>
   <div id="root"></div>
-  <script type="text/babel">
-    const { useState, useEffect, useRef, useCallback } = React;
-    const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, ComposedChart, LabelList, LineChart, Line } = window.Recharts;
+  <script>
+  (function(){
+    var { useState, useEffect, useRef, useCallback } = React;
+    var { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, ComposedChart, LabelList, LineChart, Line } = window.Recharts;
+    var h = React.createElement;
 
-    const C1=["#3b82f6","#10b981","#8b5cf6","#f59e0b","#ef4444","#06b6d4","#ec4899","#6366f1","#84cc16","#f97316"];
-    const TOC=["#3b82f6","#10b981","#f59e0b","#ec4899","#8b5cf6"];
-    const TOL=["Tổ 1","Tổ 2","Tổ 3","Tổ 4","Tổ 5"];
-    const STL=["Mới","Tiếp cận","Quan tâm","Xét Học bạ","Fail"];
-    const HC=["#ef4444","#f59e0b","#10b981","#3b82f6","#8b5cf6","#06b6d4"];
+    var C1=["#3b82f6","#10b981","#8b5cf6","#f59e0b","#ef4444","#06b6d4","#ec4899","#6366f1","#84cc16","#f97316"];
+    var TOC=["#3b82f6","#10b981","#f59e0b","#ec4899","#8b5cf6"];
+    var TOL=["Tổ 1","Tổ 2","Tổ 3","Tổ 4","Tổ 5"];
+    var STL=["Mới","Tiếp cận","Quan tâm","Xét Học bạ","Fail"];
+    var HC=["#ef4444","#f59e0b","#10b981","#3b82f6","#8b5cf6","#06b6d4"];
+    var TT={contentStyle:{background:"#1e2130",border:"1px solid #2d3148",borderRadius:8,color:"#e8eaf0",fontSize:11}};
 
-    function rng(s){const x=Math.sin(s+1)*10000;return x-Math.floor(x);}
+    function rng(s){var x=Math.sin(s+1)*10000;return x-Math.floor(x);}
 
-    const MOCK=Array.from({length:200},function(_,i){
-      return {
-        _id:"c"+i, name:"Thí sinh "+(i+1), phone:"09"+String(i).padStart(8,"0"),
+    var MOCK=Array.from({length:200},function(_,i){
+      return {_id:"c"+i,name:"Thí sinh "+(i+1),phone:"09"+String(i).padStart(8,"0"),
         province:["Hồ Chí Minh","Bình Dương","Đồng Nai","Tiền Giang","Long An","Bình Thuận","Tây Ninh","Bà Rịa - VT","Vĩnh Long","An Giang"][i%10],
         major:["CNTT","Kinh tế","Quản trị","Y dược","Luật","Kế toán","Marketing","Du lịch","Khách sạn","Ngôn ngữ Anh"][i%10],
-        status:STL[Math.floor(rng(i)*5)], telesales:TOL[i%5],
+        status:STL[Math.floor(rng(i)*5)],telesales:TOL[i%5],
         kenh:["Nguồn Offline","Zalo Collect","Nguồn Online","Mua list giới thiệu","Ngày hội"][i%5],
-        cccd:i%7===0?"":"OK", email:i%6===0?"":"ok@gmail.com",
+        cccd:i%7===0?"":"OK",email:i%6===0?"":"ok@gmail.com",
         diem_tbm:Math.round((6+rng(i+100)*4)*100)/100,
         diem_tohop:Math.round((18+rng(i+200)*12)*100)/100,
         diem_dgnl:Math.round(600+rng(i+300)*400),
         xhb:i%3===0?"Không XHB":"Có XHB",
-        created_at:new Date(Date.now()-i*172800000).toISOString().split("T")[0]
-      };
+        created_at:new Date(Date.now()-i*172800000).toISOString().split("T")[0]};
     });
-
-    const TT={contentStyle:{background:"#1e2130",border:"1px solid #2d3148",borderRadius:8,color:"#e8eaf0",fontSize:11}};
 
     function BL(props){
       var x=props.x,y=props.y,w=props.width,v=props.value;
       if(!v||w<18) return null;
       var label=Number(v).toLocaleString();
       if(label.length*2>w*0.95) return null;
-      return React.createElement("text",{x:x+w/2,y:y-4,fill:"#e8eaf0",textAnchor:"middle",fontSize:10,fontWeight:600},label);
+      return h("text",{x:x+w/2,y:y-4,fill:"#e8eaf0",textAnchor:"middle",fontSize:10,fontWeight:600},label);
     }
     function PL(props){
       var cx=props.cx,cy=props.cy,ma=props.midAngle,ir=props.innerRadius,or=props.outerRadius,v=props.value,p=props.percent;
       if(p<0.04) return null;
       var R=Math.PI/180,r=ir+(or-ir)*0.5,x=cx+r*Math.cos(-ma*R),y=cy+r*Math.sin(-ma*R);
-      return React.createElement("text",{x:x,y:y,fill:"#fff",textAnchor:"middle",dominantBaseline:"central",fontSize:11,fontWeight:700},v);
+      return h("text",{x,y,fill:"#fff",textAnchor:"middle",dominantBaseline:"central",fontSize:11,fontWeight:700},v);
     }
-
-    function KCard(props){
-      var c=props.color||"#3b82f6";
-      return React.createElement("div",{style:{background:"#1a1f35",border:"1px solid "+c+"44",borderRadius:10,padding:"14px 18px",flex:1,minWidth:140}},
-        React.createElement("div",{style:{fontSize:28,fontWeight:800,color:c,lineHeight:1,marginBottom:4}},props.val),
-        React.createElement("div",{style:{fontSize:11,color:"#8b92a9",textTransform:"uppercase",letterSpacing:".5px",marginBottom:2}},props.label),
-        props.pct&&React.createElement("div",{style:{fontSize:11,color:"#8b92a9"}},props.pct)
+    function KCard({val,label,pct,color}){
+      var c=color||"#3b82f6";
+      return h("div",{style:{background:"#1a1f35",border:"1px solid "+c+"44",borderRadius:10,padding:"14px 18px",flex:1,minWidth:140}},
+        h("div",{style:{fontSize:28,fontWeight:800,color:c,lineHeight:1,marginBottom:4}},val),
+        h("div",{style:{fontSize:11,color:"#8b92a9",textTransform:"uppercase",letterSpacing:".5px",marginBottom:2}},label),
+        pct&&h("div",{style:{fontSize:11,color:"#8b92a9"}},pct)
       );
     }
-
-    function SC(props){
-      return React.createElement("div",{style:Object.assign({background:"#161b2e",border:"1px solid #2d3148",borderRadius:10,padding:"16px 20px"},props.style||{})},
-        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:props.sub?2:12}},
-          React.createElement("div",null,
-            props.title&&React.createElement("div",{style:{fontWeight:700,color:"#e8eaf0",fontSize:13}},props.title),
-            props.sub&&React.createElement("div",{style:{fontSize:11,color:"#8b92a9",marginTop:2}},props.sub)
+    function SC({title,sub,style,onExpand,children}){
+      return h("div",{style:Object.assign({background:"#161b2e",border:"1px solid #2d3148",borderRadius:10,padding:"16px 20px"},style||{})},
+        h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:sub?2:12}},
+          h("div",null,
+            title&&h("div",{style:{fontWeight:700,color:"#e8eaf0",fontSize:13}},title),
+            sub&&h("div",{style:{fontSize:11,color:"#8b92a9",marginTop:2}},sub)
           ),
-          props.onExpand&&React.createElement("button",{onClick:props.onExpand,style:{background:"transparent",border:"1px solid #2d3148",color:"#8b92a9",borderRadius:6,width:28,height:28,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0,marginLeft:8}},"⛶")
+          onExpand&&h("button",{onClick:onExpand,style:{background:"transparent",border:"1px solid #2d3148",color:"#8b92a9",borderRadius:6,width:28,height:28,cursor:"pointer",fontSize:14,flexShrink:0,marginLeft:8}},"⛶")
         ),
-        props.children
+        children
       );
     }
-
-    function Tag(props){
-      return React.createElement("button",{onClick:props.onClick,style:{background:props.active?"#3b82f6":"#1e2130",border:"1px solid "+(props.active?"#3b82f6":"#2d3148"),color:props.active?"#fff":"#8b92a9",borderRadius:20,padding:"5px 14px",fontSize:12,fontWeight:props.active?600:400,display:"flex",alignItems:"center",gap:6,whiteSpace:"nowrap",cursor:"pointer"}},props.children);
+    function Tag({onClick,active,children}){
+      return h("button",{onClick,style:{background:active?"#3b82f6":"#1e2130",border:"1px solid "+(active?"#3b82f6":"#2d3148"),color:active?"#fff":"#8b92a9",borderRadius:20,padding:"5px 14px",fontSize:12,fontWeight:active?600:400,display:"flex",alignItems:"center",gap:6,whiteSpace:"nowrap",cursor:"pointer"}},children);
     }
-
-    function Modal(props){
-      if(!props.modal) return null;
-      return React.createElement("div",{onClick:props.onClose,style:{position:"fixed",inset:0,background:"rgba(0,0,0,.8)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:24}},
-        React.createElement("div",{onClick:function(e){e.stopPropagation();},style:{background:"#161b2e",border:"1px solid #2d3148",borderRadius:14,padding:"20px 24px",width:"100%",maxWidth:1000,maxHeight:"90vh",overflow:"auto"}},
-          React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}},
-            React.createElement("div",null,
-              React.createElement("div",{style:{fontWeight:700,color:"#e8eaf0",fontSize:16}},props.modal.title),
-              props.modal.sub&&React.createElement("div",{style:{fontSize:12,color:"#8b92a9",marginTop:2}},props.modal.sub)
+    function Modal({modal,onClose}){
+      if(!modal) return null;
+      return h("div",{onClick:onClose,style:{position:"fixed",inset:0,background:"rgba(0,0,0,.8)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:24}},
+        h("div",{onClick:function(e){e.stopPropagation();},style:{background:"#161b2e",border:"1px solid #2d3148",borderRadius:14,padding:"20px 24px",width:"100%",maxWidth:1000,maxHeight:"90vh",overflow:"auto"}},
+          h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}},
+            h("div",null,
+              h("div",{style:{fontWeight:700,color:"#e8eaf0",fontSize:16}},modal.title),
+              modal.sub&&h("div",{style:{fontSize:12,color:"#8b92a9",marginTop:2}},modal.sub)
             ),
-            React.createElement("button",{onClick:props.onClose,style:{background:"#2d3148",border:"none",color:"#c8cde0",borderRadius:6,width:32,height:32,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}},"×")
+            h("button",{onClick:onClose,style:{background:"#2d3148",border:"none",color:"#c8cde0",borderRadius:6,width:32,height:32,cursor:"pointer",fontSize:18}},"×")
           ),
-          props.modal.content
+          modal.content
         )
       );
     }
 
+    var inp={background:"#1e2130",border:"1px solid #2d3148",color:"#c8cde0",borderRadius:6,padding:"6px 10px",fontSize:12};
+    var thS={color:"#8b92a9",fontWeight:600,padding:"7px 10px",textAlign:"left",fontSize:10,textTransform:"uppercase",borderBottom:"1px solid #2d3148",cursor:"pointer",whiteSpace:"nowrap"};
+    var tdS={padding:"6px 10px",color:"#c8cde0",verticalAlign:"middle",fontSize:11};
+    var POLL=30, PAGE=10;
+    var NAV=[{id:"funnel",label:"TIẾN TRÌNH",icon:"①"},{id:"kenh",label:"KÊNH TUYỂN SINH",icon:"②"},{id:"diem",label:"ĐIỂM SỐ & NGÀNH",icon:"③"},{id:"dialy",label:"ĐỊA LÝ & TRƯỜNG",icon:"④"},{id:"phanloai",label:"PHÂN TÍCH 3 LOẠI ĐIỂM",icon:"⑤"},{id:"data",label:"DỮ LIỆU",icon:"📋"},{id:"ai",label:"AI INSIGHT",icon:"🤖"},{id:"upload",label:"UPLOAD",icon:"📁"}];
+
     function App(){
-      var tabState=useState("funnel"); var currentTab=tabState[0],setCurrentTab=tabState[1];
-      var ds=useState([]); var data=ds[0],setData=ds[1];
-      var ss=useState("idle"); var st=ss[0],setSt=ss[1];
-      var ms=useState(true); var mock=ms[0],setMock=ms[1];
-      var cs=useState(30); var cd=cs[0],setCd=cs[1];
-      var fs=useState("Tất cả"); var filterTo=fs[0],setFilterTo=fs[1];
-      var sr=useState(""); var srch=sr[0],setSrch=sr[1];
-      var fss=useState("Tất cả"); var fSt=fss[0],setFSt=fss[1];
-      var fts=useState("Tất cả"); var fTs=fts[0],setFTs=fts[1];
-      var fis=useState("Tất cả"); var fTinh=fis[0],setFTinh=fis[1];
-      var scs=useState("created_at"); var sCol=scs[0],setSCol=scs[1];
-      var sds=useState("desc"); var sDir=sds[0],setSDir=sds[1];
-      var pgs=useState(1); var pg=pgs[0],setPg=pgs[1];
-      var ats=useState(""); var aiTxt=ats[0],setAiTxt=ats[1];
-      var als=useState(false); var aiLd=als[0],setAiLd=als[1];
-      var ums=useState(""); var uploadMsg=ums[0],setUploadMsg=ums[1];
-      var ups=useState(0); var uploadPct=ups[0],setUploadPct=ups[1];
-      var mos=useState(null); var modal=mos[0],setModal=mos[1];
-      var timerRef=useRef(null); var cdRef=useRef(null); var fileRef=useRef(null);
-      var POLL=30;
-      var PAGE=10;
+      var [currentTab,setCurrentTab]=useState("funnel");
+      var [data,setData]=useState([]);
+      var [st,setSt]=useState("idle");
+      var [mock,setMock]=useState(true);
+      var [cd,setCd]=useState(POLL);
+      var [filterTo,setFilterTo]=useState("Tất cả");
+      var [srch,setSrch]=useState("");
+      var [fSt,setFSt]=useState("Tất cả");
+      var [fTs,setFTs]=useState("Tất cả");
+      var [fTinh,setFTinh]=useState("Tất cả");
+      var [sCol,setSCol]=useState("created_at");
+      var [sDir,setSDir]=useState("desc");
+      var [pg,setPg]=useState(1);
+      var [aiTxt,setAiTxt]=useState("");
+      var [aiLd,setAiLd]=useState(false);
+      var [uploadMsg,setUploadMsg]=useState("");
+      var [uploadPct,setUploadPct]=useState(0);
+      var [modal,setModal]=useState(null);
+      var timerRef=useRef(null),cdRef=useRef(null),fileRef=useRef(null);
 
       var active=mock?MOCK:data;
       var af=active.filter(function(x){
-        return(filterTo==="Tất cả"||x.telesales===filterTo)
-          &&(fTinh==="Tất cả"||x.province===fTinh);
+        return(filterTo==="Tất cả"||x.telesales===filterTo)&&(fTinh==="Tất cả"||x.province===fTinh);
       });
       var total=af.length;
-
       var byStatus=STL.map(function(s){return{name:s,v:af.filter(function(x){return x.status===s;}).length};});
       var xhb=af.filter(function(x){return x.status==="Xét Học bạ";}).length;
       var tiepcan=af.filter(function(x){return x.status==="Tiếp cận";}).length;
       var fail=af.filter(function(x){return x.status==="Fail";}).length;
-
-      var byTo=TOL.map(function(t){
-        var rows=af.filter(function(x){return x.telesales===t;});
-        var obj={name:t,total:rows.length,xhb:rows.filter(function(x){return x.status==="Xét Học bạ";}).length};
-        STL.forEach(function(s){obj[s]=rows.filter(function(x){return x.status===s;}).length;});
-        return obj;
-      });
-
-      var byTinhMap={};
-      af.forEach(function(x){if(x.province)byTinhMap[x.province]=(byTinhMap[x.province]||0)+1;});
+      var byTo=TOL.map(function(t){var rows=af.filter(function(x){return x.telesales===t;});var obj={name:t,total:rows.length,xhb:rows.filter(function(x){return x.status==="Xét Học bạ";}).length};STL.forEach(function(s){obj[s]=rows.filter(function(x){return x.status===s;}).length;});return obj;});
+      var byTinhMap={};af.forEach(function(x){if(x.province)byTinhMap[x.province]=(byTinhMap[x.province]||0)+1;});
       var byTinh=Object.keys(byTinhMap).map(function(k){return{name:k,value:byTinhMap[k]};}).sort(function(a,b){return b.value-a.value;});
-
-      var byKenhMap={};
-      af.forEach(function(x){if(x.kenh)byKenhMap[x.kenh]=(byKenhMap[x.kenh]||0)+1;});
+      var byKenhMap={};af.forEach(function(x){if(x.kenh)byKenhMap[x.kenh]=(byKenhMap[x.kenh]||0)+1;});
       var byKenh=Object.keys(byKenhMap).map(function(k){return{name:k,total:byKenhMap[k],xhb:af.filter(function(x){return x.kenh===k&&x.status==="Xét Học bạ";}).length};});
-
-      var majorMap={};
-      af.forEach(function(x){if(x.major){if(!majorMap[x.major])majorMap[x.major]={sum:0,cnt:0};majorMap[x.major].sum+=(x.diem_tbm||0);majorMap[x.major].cnt++;}});
+      var majorMap={};af.forEach(function(x){if(x.major){if(!majorMap[x.major])majorMap[x.major]={sum:0,cnt:0};majorMap[x.major].sum+=(x.diem_tbm||0);majorMap[x.major].cnt++;}});
       var byMajor=Object.keys(majorMap).map(function(k){return{name:k,avg:majorMap[k].cnt?majorMap[k].sum/majorMap[k].cnt:0};}).sort(function(a,b){return b.avg-a.avg;}).slice(0,10);
-
       var dTBM=af.filter(function(x){return x.diem_tbm;}).map(function(x){return x.diem_tbm;});
       var dTH=af.filter(function(x){return x.diem_tohop;}).map(function(x){return x.diem_tohop;});
       var dDGNL=af.filter(function(x){return x.diem_dgnl;}).map(function(x){return x.diem_dgnl;});
@@ -165,87 +148,44 @@
       var avgDGNL=dDGNL.length?Math.round(dDGNL.reduce(function(a,b){return a+b;},0)/dDGNL.length):0;
       var noCCCD=af.filter(function(x){return!x.cccd;}).length;
       var noEmail=af.filter(function(x){return!x.email;}).length;
-
       var tbmH=[{r:"6.0-6.5",v:dTBM.filter(function(x){return x>=6&&x<6.5;}).length},{r:"6.5-7.0",v:dTBM.filter(function(x){return x>=6.5&&x<7;}).length},{r:"7.0-7.5",v:dTBM.filter(function(x){return x>=7&&x<7.5;}).length},{r:"7.5-8.0",v:dTBM.filter(function(x){return x>=7.5&&x<8;}).length},{r:"8.0-8.5",v:dTBM.filter(function(x){return x>=8&&x<8.5;}).length},{r:"8.5+",v:dTBM.filter(function(x){return x>=8.5;}).length}];
       var thH=[{r:"18-20",v:dTH.filter(function(x){return x>=18&&x<20;}).length},{r:"20-22",v:dTH.filter(function(x){return x>=20&&x<22;}).length},{r:"22-24",v:dTH.filter(function(x){return x>=22&&x<24;}).length},{r:"24-26",v:dTH.filter(function(x){return x>=24&&x<26;}).length},{r:"26-28",v:dTH.filter(function(x){return x>=26&&x<28;}).length},{r:"28+",v:dTH.filter(function(x){return x>=28;}).length}];
       var radarData=byMajor.slice(0,6).map(function(m){return{subject:m.name,TBM:m.avg};});
-
-      var xhbLine=(function(){
-        var xd=af.filter(function(x){return x.status==="Xét Học bạ";});
-        var allD=xd.map(function(x){return x.created_at;}).filter(Boolean);
-        var uD=allD.filter(function(v,i,a){return a.indexOf(v)===i;}).sort().slice(-14);
-        return uD.map(function(d){
-          var row={ngay:d.slice(5)};
-          TOL.forEach(function(t){row[t]=xd.filter(function(x){return x.created_at===d&&x.telesales===t;}).length;});
-          return row;
-        });
-      }());
+      var xhbLine=(function(){var xd=af.filter(function(x){return x.status==="Xét Học bạ";});var allD=xd.map(function(x){return x.created_at;}).filter(Boolean);var uD=allD.filter(function(v,i,a){return a.indexOf(v)===i;}).sort().slice(-14);return uD.map(function(d){var row={ngay:d.slice(5)};TOL.forEach(function(t){row[t]=xd.filter(function(x){return x.created_at===d&&x.telesales===t;}).length;});return row;});})();
+      var gpData=TOL.map(function(t){var obj={name:t};STL.forEach(function(s){obj[s]=af.filter(function(x){return x.telesales===t&&x.status===s;}).length;});return obj;});
+      var tinhAllMap={};active.forEach(function(x){if(x.province)tinhAllMap[x.province]=(tinhAllMap[x.province]||0)+1;});
+      var tinhL=["Tất cả"].concat(Object.keys(tinhAllMap).sort());
+      var tsL=["Tất cả"].concat(TOL);
+      var stL=["Tất cả"].concat(STL);
+      var filtered=af.filter(function(d){var q=srch.toLowerCase();return(!q||String(d.name||"").toLowerCase().includes(q)||String(d.phone||"").includes(q))&&(fTinh==="Tất cả"||d.province===fTinh)&&(fTs==="Tất cả"||d.telesales===fTs)&&(fSt==="Tất cả"||d.status===fSt);}).sort(function(a,b){return sDir==="asc"?String(a[sCol]||"").localeCompare(String(b[sCol]||"")):String(b[sCol]||"").localeCompare(String(a[sCol]||""));});
+      var pages=Math.max(1,Math.ceil(filtered.length/PAGE));
+      var paged=filtered.slice((pg-1)*PAGE,pg*PAGE);
 
       var doFetch=useCallback(async function(){
         setSt("loading");
         try{
-          var ts2=String(Date.now());
-          var e2=new TextEncoder();
-          var SECRET2="92f8a3c93d940a7442cd";
-          var PROJECT2="673ea2058e0197002bd25b7f";
+          var ts2=String(Date.now()),e2=new TextEncoder(),SECRET2="92f8a3c93d940a7442cd",PROJECT2="673ea2058e0197002bd25b7f";
           var k2=await crypto.subtle.importKey("raw",e2.encode(SECRET2),{name:"HMAC",hash:"SHA-512"},false,["sign"]);
           var s2=await crypto.subtle.sign("HMAC",k2,e2.encode(ts2+PROJECT2));
           var sg2=Array.from(new Uint8Array(s2)).map(function(b){return b.toString(16).padStart(2,"0");}).join("");
-          var res=await fetch("https://royal-poetry-ba87.anhthai35789.workers.dev/_api/base-table/find",{
-            method:"POST",
-            headers:{"Content-Type":"application/json","cb-access-key":"HeUxnVqK2c56898b959","cb-project-token":PROJECT2,"cb-access-timestamp":ts2,"cb-access-sign":sg2},
-            body:JSON.stringify({table:"data_customer",page:1,limit:500})
-          });
+          var res=await fetch("https://royal-poetry-ba87.anhthai35789.workers.dev/_api/base-table/find",{method:"POST",headers:{"Content-Type":"application/json","cb-access-key":"HeUxnVqK2c56898b959","cb-project-token":PROJECT2,"cb-access-timestamp":ts2,"cb-access-sign":sg2},body:JSON.stringify({table:"data_customer",page:1,limit:500})});
           if(!res.ok) throw new Error("HTTP "+res.status);
           var json=await res.json();
           var rows=(json&&(json.data||json.result||json.records||json.list))||[];
-          setData(Array.isArray(rows)?rows:[]);
-          setSt(Array.isArray(rows)&&rows.length>0?"ok":"empty");
-          setCd(POLL);
+          setData(Array.isArray(rows)?rows:[]);setSt(Array.isArray(rows)&&rows.length>0?"ok":"empty");setCd(POLL);
         }catch(e){setSt("cors");}
       },[]);
 
-      useEffect(function(){
-        if(!mock){doFetch();timerRef.current=setInterval(doFetch,POLL*1000);}
-        else{setSt("ok");clearInterval(timerRef.current);}
-        return function(){clearInterval(timerRef.current);};
-      },[mock,doFetch]);
-
-      useEffect(function(){
-        clearInterval(cdRef.current);
-        if(!mock&&st==="ok")cdRef.current=setInterval(function(){setCd(function(c){return c<=1?POLL:c-1;});},1000);
-        return function(){clearInterval(cdRef.current);};
-      },[st,mock]);
-
-      var tinhAllMap={};
-      active.forEach(function(x){if(x.province)tinhAllMap[x.province]=(tinhAllMap[x.province]||0)+1;});
-      var tinhL=["Tất cả"].concat(Object.keys(tinhAllMap).sort());
-      var tsL=["Tất cả"].concat(TOL);
-      var stL=["Tất cả"].concat(STL);
-
-      var filtered=af.filter(function(d){
-        var q=srch.toLowerCase();
-        return(!q||String(d.name||"").toLowerCase().includes(q)||String(d.phone||"").includes(q))
-          &&(fTinh==="Tất cả"||d.province===fTinh)
-          &&(fTs==="Tất cả"||d.telesales===fTs)
-          &&(fSt==="Tất cả"||d.status===fSt);
-      }).sort(function(a,b){
-        return sDir==="asc"?String(a[sCol]||"").localeCompare(String(b[sCol]||"")):String(b[sCol]||"").localeCompare(String(a[sCol]||""));
-      });
-      var pages=Math.max(1,Math.ceil(filtered.length/PAGE));
-      var paged=filtered.slice((pg-1)*PAGE,pg*PAGE);
+      useEffect(function(){if(!mock){doFetch();timerRef.current=setInterval(doFetch,POLL*1000);}else{setSt("ok");clearInterval(timerRef.current);}return function(){clearInterval(timerRef.current);};},[mock,doFetch]);
+      useEffect(function(){clearInterval(cdRef.current);if(!mock&&st==="ok")cdRef.current=setInterval(function(){setCd(function(c){return c<=1?POLL:c-1;});},1000);return function(){clearInterval(cdRef.current);};},[st,mock]);
 
       function doSort(c){if(sCol===c)setSDir(function(d){return d==="asc"?"desc":"asc";});else{setSCol(c);setSDir("asc");}}
-      function sc(s){return s==="Xét Học bạ"?"#10b981":s==="Tiếp cận"?"#f59e0b":s==="Quan tâm"?"#8b5cf6":s==="Fail"?"#ef4444":"#3b82f6";}
+      function stColor(s){return s==="Xét Học bạ"?"#10b981":s==="Tiếp cận"?"#f59e0b":s==="Quan tâm"?"#8b5cf6":s==="Fail"?"#ef4444":"#3b82f6";}
       function exp(t,s,c){setModal({title:t,sub:s,content:c});}
 
       async function handleAI(){
         setAiLd(true);setAiTxt("");
-        try{
-          var r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:"Chuyên gia tuyển sinh. Phân tích: 1)Tổng quan, 2)Cảnh báo, 3)Đề xuất. Tiếng Việt, emoji.",messages:[{role:"user",content:"Tổng:"+total+",XHB:"+xhb+",Fail:"+fail+",TBM:"+avgTBM+",CCCD:"+noCCCD+",Email:"+noEmail}]})});
-          var d=await r.json();
-          setAiTxt(d.content&&d.content[0]&&d.content[0].text||"Không có phản hồi.");
-        }catch(e){setAiTxt("Lỗi AI.");}
+        try{var r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:"Chuyên gia tuyển sinh. Phân tích: 1)Tổng quan, 2)Cảnh báo, 3)Đề xuất. Tiếng Việt, emoji.",messages:[{role:"user",content:"Tổng:"+total+",XHB:"+xhb+",Fail:"+fail+",TBM:"+avgTBM+",CCCD:"+noCCCD+",Email:"+noEmail}]})});var d=await r.json();setAiTxt(d.content&&d.content[0]&&d.content[0].text||"Không có phản hồi.");}catch(e){setAiTxt("Lỗi AI.");}
         setAiLd(false);
       }
 
@@ -254,530 +194,401 @@
         setUploadMsg("⏳ Đang đọc: "+file.name);setUploadPct(20);
         try{
           var buf=await file.arrayBuffer();setUploadPct(50);
-          var wb=XLSX.read(buf,{type:"array"});
-          var ws=wb.Sheets[wb.SheetNames[0]];setUploadPct(70);
+          var wb=XLSX.read(buf,{type:"array"});var ws=wb.Sheets[wb.SheetNames[0]];setUploadPct(70);
           var rows=XLSX.utils.sheet_to_json(ws,{defval:""});setUploadPct(90);
-          var mapped=rows.map(function(r,i){
-            return{_id:"r"+i,
-              name:r["Họ và tên"]||r["Họ tên"]||r["name"]||"",
-              phone:String(r["Di động"]||r["Số điện thoại"]||r["phone"]||""),
-              province:r["Tỉnh/ Thành phố"]||r["Tỉnh/Thành"]||r["tinh"]||"",
-              major:r["NGÀNH ĐKXT NV1"]||r["Ngành NV1"]||r["major"]||"",
-              status:r["Tiến trình"]||r["Trạng thái"]||r["status"]||"",
-              telesales:r["Tổ"]||r["Telesales"]||r["Tổ tư vấn"]||"",
-              kenh:r["Nguồn_DHV cấp 1"]||r["Kênh"]||r["Nguồn"]||"",
-              cccd:r["Số CCCD/ Mã số định danh"]||r["CCCD"]||"",
-              email:r["Email"]||r["email"]||"",
-              diem_tbm:parseFloat(r["Điểm TBM"]||0)||0,
-              diem_tohop:parseFloat(r["Điểm Tổ hợp môn"]||0)||0,
-              diem_dgnl:parseFloat(r["Điểm DGNL"]||0)||0,
-              xhb:(r["Tiến trình"]||"").toLowerCase().includes("xét học bạ")?"Có XHB":"Không XHB",
-              created_at:r["Ngày"]||r["created_at"]||new Date().toISOString().split("T")[0]
-            };
-          });
+          var mapped=rows.map(function(r,i){return{_id:"r"+i,name:r["Họ và tên"]||r["Họ tên"]||r["name"]||"",phone:String(r["Di động"]||r["Số điện thoại"]||r["phone"]||""),province:r["Tỉnh/ Thành phố"]||r["Tỉnh/Thành"]||r["tinh"]||"",major:r["NGÀNH ĐKXT NV1"]||r["Ngành NV1"]||r["major"]||"",status:r["Tiến trình"]||r["Trạng thái"]||r["status"]||"",telesales:r["Tổ"]||r["Telesales"]||r["Tổ tư vấn"]||"",kenh:r["Nguồn_DHV cấp 1"]||r["Kênh"]||r["Nguồn"]||"",cccd:r["Số CCCD/ Mã số định danh"]||r["CCCD"]||"",email:r["Email"]||r["email"]||"",diem_tbm:parseFloat(r["Điểm TBM"]||0)||0,diem_tohop:parseFloat(r["Điểm Tổ hợp môn"]||0)||0,diem_dgnl:parseFloat(r["Điểm DGNL"]||0)||0,xhb:(r["Tiến trình"]||"").toLowerCase().includes("xét học bạ")?"Có XHB":"Không XHB",created_at:r["Ngày"]||r["created_at"]||new Date().toISOString().split("T")[0]};});
           setUploadPct(100);setData(mapped);setMock(false);setSt("ok");
-          setUploadMsg("✅ "+file.name+" — "+mapped.length.toLocaleString()+" bản ghi");
-          setCurrentTab("funnel");
+          setUploadMsg("✅ "+file.name+" — "+mapped.length.toLocaleString()+" bản ghi");setCurrentTab("funnel");
         }catch(err){setUploadMsg("❌ Lỗi: "+err.message);setUploadPct(0);}
       }
 
-      var inp={background:"#1e2130",border:"1px solid #2d3148",color:"#c8cde0",borderRadius:6,padding:"6px 10px",fontSize:12};
-      var thS={color:"#8b92a9",fontWeight:600,padding:"7px 10px",textAlign:"left",fontSize:10,textTransform:"uppercase",borderBottom:"1px solid #2d3148",cursor:"pointer",whiteSpace:"nowrap"};
-      var tdS={padding:"6px 10px",color:"#c8cde0",verticalAlign:"middle",fontSize:11};
-      var navItems=[{id:"funnel",label:"TIẾN TRÌNH",icon:"①"},{id:"kenh",label:"KÊNH TUYỂN SINH",icon:"②"},{id:"diem",label:"ĐIỂM SỐ & NGÀNH",icon:"③"},{id:"dialy",label:"ĐỊA LÝ & TRƯỜNG",icon:"④"},{id:"phanloai",label:"PHÂN TÍCH 3 LOẠI ĐIỂM",icon:"⑤"}];
+      return h("div",{style:{minHeight:"100vh",background:"#0e1117",fontFamily:"'Segoe UI',sans-serif",color:"#c8cde0",fontSize:13}},
+        h(Modal,{modal,onClose:function(){setModal(null);}}),
 
-      var gpData=TOL.map(function(t){
-        var obj={name:t};
-        STL.forEach(function(s){obj[s]=af.filter(function(x){return x.telesales===t&&x.status===s;}).length;});
-        return obj;
-      });
+        // Header
+        h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"18px 24px 0",flexWrap:"wrap",gap:12}},
+          h("div",null,
+            h("h1",{style:{fontSize:22,fontWeight:800,color:"#fff",lineHeight:1.2,margin:0}},
+              "Phân tích ",h("span",{style:{color:"#3b82f6"}},"Chuyên sâu"),h("br"),h("span",null,"Dữ liệu Thí sinh 2026")
+            ),
+            h("div",{style:{fontSize:11,color:"#8b92a9",marginTop:6}},
+              "ĐH Hùng Vương TP.HCM · ",(mock?"Demo":"Live"),
+              st==="ok"&&!mock&&h("span",{style:{color:"#10b981",marginLeft:8}},"● Live · "+cd+"s"),
+              mock&&h("span",{style:{color:"#8b5cf6",marginLeft:8}},"● Demo mode")
+            )
+          ),
+          h("div",{style:{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}},
+            h("div",{style:{display:"flex",flexDirection:"column",gap:2}},
+              h("div",{style:{fontSize:10,color:"#8b92a9"}},"🗺️ Tỉnh/Thành"),
+              h("div",{style:{display:"flex",gap:4}},
+                h("button",{title:"Reset bộ lọc",onClick:function(){setFilterTo("Tất cả");setFTinh("Tất cả");},style:{background:"#2d3148",border:"1px solid #3b82f6",color:"#3b82f6",borderRadius:6,width:32,cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}},"↺"),
+                h("select",{value:fTinh,onChange:function(e){setFTinh(e.target.value);},style:Object.assign({},inp,{cursor:"pointer"})},
+                  tinhL.map(function(t){return h("option",{key:t},t);})
+                )
+              )
+            ),
+            h("div",{style:{display:"flex",flexDirection:"column",gap:2}},
+              h("div",{style:{fontSize:10,color:"#8b92a9"}},"👤 Tổ tư vấn"),
+              h("select",{value:filterTo,onChange:function(e){setFilterTo(e.target.value);},style:Object.assign({},inp,{cursor:"pointer"})},
+                ["Tất cả"].concat(TOL).map(function(t){return h("option",{key:t},t);})
+              )
+            ),
+            mock
+              ?h("button",{onClick:function(){setMock(false);doFetch();},style:{background:"#3b82f633",border:"1px solid #3b82f6",color:"#3b82f6",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:600,cursor:"pointer"}},"← API thật")
+              :h("button",{onClick:function(){setMock(true);},style:{background:"#8b5cf633",border:"1px solid #8b5cf6",color:"#8b5cf6",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:600,cursor:"pointer"}},"Demo"),
+            h("input",{ref:fileRef,type:"file",accept:".xlsx,.xls,.csv",style:{display:"none"},onChange:handleFile}),
+            h("button",{onClick:function(){fileRef.current.click();},style:{background:"#3b82f6",border:"none",color:"#fff",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:600,cursor:"pointer"}},"+Upload")
+          )
+        ),
 
-      return (
-        <div style={{minHeight:"100vh",background:"#0e1117",fontFamily:"'Segoe UI',sans-serif",color:"#c8cde0",fontSize:13}}>
-          <style>{"@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}"}</style>
-          <Modal modal={modal} onClose={function(){setModal(null);}}/>
+        // Tabs
+        h("div",{style:{display:"flex",gap:8,padding:"14px 24px",overflowX:"auto",borderBottom:"1px solid #2d3148"}},
+          NAV.map(function(t){return h(Tag,{key:t.id,active:currentTab===t.id,onClick:function(){setCurrentTab(t.id);}},t.icon+" "+t.label);})
+        ),
 
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"18px 24px 0",flexWrap:"wrap",gap:12}}>
-            <div>
-              <h1 style={{fontSize:22,fontWeight:800,color:"#fff",lineHeight:1.2,margin:0}}>
-                Phân tích <span style={{color:"#3b82f6"}}>Chuyên sâu</span><br/>Dữ liệu Thí sinh 2026
-              </h1>
-              <div style={{fontSize:11,color:"#8b92a9",marginTop:6}}>
-                ĐH Hùng Vương TP.HCM · {mock?"Demo":"Live"}
-                {st==="ok"&&!mock&&<span style={{color:"#10b981",marginLeft:8}}>● Live · {cd}s</span>}
-                {mock&&<span style={{color:"#8b5cf6",marginLeft:8}}>● Demo mode</span>}
-              </div>
-            </div>
-            <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
-              <div style={{display:"flex",flexDirection:"column",gap:2}}>
-                <div style={{fontSize:10,color:"#8b92a9"}}>🗺️ Tỉnh/Thành</div>
-                <div style={{display:"flex",gap:4}}>
-                  <button title="Reset bộ lọc" onClick={function(){setFilterTo("Tất cả");setFTinh("Tất cả");}} style={{background:"#2d3148",border:"1px solid #3b82f6",color:"#3b82f6",borderRadius:6,width:32,cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>↺</button>
-                  <select value={fTinh} onChange={function(e){setFTinh(e.target.value);}} style={Object.assign({},inp,{cursor:"pointer"})}>
-                    {tinhL.map(function(t){return React.createElement("option",{key:t},t);})}
-                  </select>
-                </div>
-              </div>
-              <div style={{display:"flex",flexDirection:"column",gap:2}}>
-                <div style={{fontSize:10,color:"#8b92a9"}}>👤 Tổ tư vấn</div>
-                <select value={filterTo} onChange={function(e){setFilterTo(e.target.value);}} style={Object.assign({},inp,{cursor:"pointer"})}>
-                  <option>Tất cả</option>
-                  {TOL.map(function(t){return React.createElement("option",{key:t},t);})}
-                </select>
-              </div>
-              {mock
-                ?React.createElement("button",{onClick:function(){setMock(false);doFetch();},style:{background:"#3b82f633",border:"1px solid #3b82f6",color:"#3b82f6",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:600,cursor:"pointer"}},"← API thật")
-                :React.createElement("button",{onClick:function(){setMock(true);},style:{background:"#8b5cf633",border:"1px solid #8b5cf6",color:"#8b5cf6",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:600,cursor:"pointer"}},"Demo")
-              }
-              <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" style={{display:"none"}} onChange={handleFile}/>
-              <button onClick={function(){fileRef.current.click();}} style={{background:"#3b82f6",border:"none",color:"#fff",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:600,cursor:"pointer"}}>+ Upload</button>
-            </div>
-          </div>
+        h("div",{style:{padding:"16px 24px"}},
 
-          <div style={{display:"flex",gap:8,padding:"14px 24px",overflowX:"auto",borderBottom:"1px solid #2d3148"}}>
-            {navItems.map(function(t){return React.createElement(Tag,{key:t.id,active:currentTab===t.id,onClick:function(){setCurrentTab(t.id);}},React.createElement("span",null,t.icon),t.label);})}
-            {React.createElement(Tag,{active:currentTab==="data",onClick:function(){setCurrentTab("data");}},"📋 DỮ LIỆU")}
-            {React.createElement(Tag,{active:currentTab==="ai",onClick:function(){setCurrentTab("ai");}},"🤖 AI INSIGHT")}
-            {React.createElement(Tag,{active:currentTab==="upload",onClick:function(){setCurrentTab("upload");}},"📁 UPLOAD")}
-          </div>
-
-          <div style={{padding:"16px 24px"}}>
-
-          {currentTab==="funnel"&&(
-            <div>
-              <div style={{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}}>
-                <KCard val={total.toLocaleString()} label="TỔNG HỒ SƠ" color="#3b82f6"/>
-                <KCard val={xhb.toLocaleString()} label="XÉT HỌC BẠ" pct={(total?((xhb/total)*100).toFixed(1):0)+"% tổng"} color="#10b981"/>
-                <KCard val={tiepcan.toLocaleString()} label="ĐANG TIẾP CẬN" pct={(total?((tiepcan/total)*100).toFixed(1):0)+"% tổng"} color="#f59e0b"/>
-                <KCard val={fail.toLocaleString()} label="FAIL" pct={(total?((fail/total)*100).toFixed(1):0)+"% tổng"} color="#ef4444"/>
-              </div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}}>
-                <SC title="Phễu Chuyển đổi" sub="Số lượng thí sinh tại từng giai đoạn"
-                  onExpand={function(){exp("Phễu Chuyển đổi","",
-                    React.createElement("div",null,byStatus.map(function(s,i){
-                      var pct=total?((s.v/total)*100).toFixed(1):0;
-                      return React.createElement("div",{key:i,style:{display:"flex",alignItems:"center",gap:10,marginBottom:14}},
-                        React.createElement("span",{style:{width:100,fontSize:14,color:"#8b92a9",textAlign:"right",flexShrink:0}},s.name),
-                        React.createElement("div",{style:{flex:1,background:"#2d3148",borderRadius:4,height:40,overflow:"hidden",position:"relative"}},
-                          React.createElement("div",{style:{width:pct+"%",height:"100%",background:C1[i],borderRadius:4}}),
-                          React.createElement("span",{style:{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",color:"#fff",fontSize:14,fontWeight:700}},s.v.toLocaleString())
-                        ),
-                        React.createElement("span",{style:{fontSize:14,fontWeight:600,color:C1[i],minWidth:50,textAlign:"right"}},s.v),
-                        React.createElement("span",{style:{fontSize:12,color:"#8b92a9",minWidth:48,textAlign:"right"}},pct+"%")
-                      );
-                    }))
-                  );}}>
-                  {byStatus.map(function(s,i){
-                    var pct=total?((s.v/total)*100).toFixed(1):0;
-                    return(
-                      <div key={i} style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-                        <span style={{width:80,fontSize:12,color:"#8b92a9",textAlign:"right",flexShrink:0}}>{s.name}</span>
-                        <div style={{flex:1,background:"#2d3148",borderRadius:4,height:28,overflow:"hidden",position:"relative"}}>
-                          <div style={{width:pct+"%",height:"100%",background:C1[i],borderRadius:4}}/>
-                          <span style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",color:"#fff",fontSize:12,fontWeight:700}}>{s.v.toLocaleString()}</span>
-                        </div>
-                        <span style={{fontSize:12,fontWeight:600,color:C1[i],minWidth:40,textAlign:"right"}}>{s.v}</span>
-                        <span style={{fontSize:11,color:"#8b92a9",minWidth:42,textAlign:"right"}}>{pct}%</span>
-                      </div>
-                    );
-                  })}
-                </SC>
-                <SC title="XHB theo Tổ tư vấn" sub="Số hồ sơ Xét Học bạ của từng Tổ"
-                  onExpand={function(){exp("XHB theo Tổ","",
-                    React.createElement(ResponsiveContainer,{width:"100%",height:400},
-                      React.createElement(BarChart,{data:byTo,margin:{top:20,right:20,left:-20,bottom:0}},
-                        React.createElement(CartesianGrid,{strokeDasharray:"3 3",stroke:"#2d3148"}),
-                        React.createElement(XAxis,{dataKey:"name",tick:{fill:"#8b92a9",fontSize:13},axisLine:false,tickLine:false}),
-                        React.createElement(YAxis,{tick:{fill:"#8b92a9",fontSize:13},axisLine:false,tickLine:false}),
-                        React.createElement(Tooltip,TT),
-                        React.createElement(Bar,{dataKey:"xhb",fill:"#10b981",radius:[4,4,0,0],name:"XHB"},React.createElement(LabelList,{dataKey:"xhb",content:BL}))
-                      )
-                    )
-                  );}}>
-                  <ResponsiveContainer width="100%" height={240}>
-                    <BarChart data={byTo} margin={{top:20,right:20,left:-20,bottom:0}}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#2d3148"/>
-                      <XAxis dataKey="name" tick={{fill:"#8b92a9",fontSize:11}} axisLine={false} tickLine={false}/>
-                      <YAxis tick={{fill:"#8b92a9",fontSize:11}} axisLine={false} tickLine={false}/>
-                      <Tooltip {...TT}/>
-                      <Bar dataKey="xhb" fill="#10b981" radius={[4,4,0,0]} name="XHB"><LabelList dataKey="xhb" content={BL}/></Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </SC>
-              </div>
-              <SC title="Tiến trình theo Tổ tư vấn" sub="So sánh từng giai đoạn giữa các Tổ" style={{marginBottom:14}}
-                onExpand={function(){exp("Tiến trình theo Tổ","",
-                  React.createElement(ResponsiveContainer,{width:"100%",height:420},
-                    React.createElement(BarChart,{data:gpData,margin:{top:20,right:10,left:0,bottom:0},barCategoryGap:"20%",barGap:2},
-                      React.createElement(CartesianGrid,{strokeDasharray:"3 3",stroke:"#2d3148"}),
-                      React.createElement(XAxis,{dataKey:"name",tick:{fill:"#8b92a9",fontSize:13},axisLine:false,tickLine:false}),
-                      React.createElement(YAxis,{tick:{fill:"#8b92a9",fontSize:13},axisLine:false,tickLine:false}),
-                      React.createElement(Tooltip,TT),
-                      STL.map(function(s,i){return React.createElement(Bar,{key:s,dataKey:s,fill:C1[i],radius:[3,3,0,0],name:s},React.createElement(LabelList,{dataKey:s,content:BL}));})
-                    )
-                  )
-                );}}>
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={gpData} margin={{top:20,right:10,left:0,bottom:0}} barCategoryGap="10%" barGap={1}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#2d3148"/>
-                    <XAxis dataKey="name" tick={{fill:"#8b92a9",fontSize:10}} axisLine={false} tickLine={false}/>
-                    <YAxis tick={{fill:"#8b92a9",fontSize:10}} axisLine={false} tickLine={false}/>
-                    <Tooltip {...TT}/>
-                    {STL.map(function(s,i){return <Bar key={s} dataKey={s} fill={C1[i]} radius={[3,3,0,0]} name={s}><LabelList dataKey={s} content={BL}/></Bar>;})}
-                  </BarChart>
-                </ResponsiveContainer>
-                <div style={{display:"flex",flexWrap:"wrap",gap:"4px 14px",justifyContent:"center",marginTop:8}}>
-                  {STL.map(function(s,i){return <span key={s} style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#8b92a9"}}><span style={{width:8,height:8,borderRadius:2,background:C1[i],display:"inline-block"}}/>{s}</span>;})}
-                </div>
-              </SC>
-              <SC title="XHB theo ngày của từng Tổ" sub="14 ngày gần nhất"
-                onExpand={function(){exp("XHB theo ngày","14 ngày gần nhất",
-                  React.createElement(ResponsiveContainer,{width:"100%",height:420},
-                    React.createElement(LineChart,{data:xhbLine,margin:{top:10,right:20,left:-20,bottom:0}},
-                      React.createElement(CartesianGrid,{strokeDasharray:"3 3",stroke:"#2d3148"}),
-                      React.createElement(XAxis,{dataKey:"ngay",tick:{fill:"#8b92a9",fontSize:12},axisLine:false,tickLine:false}),
-                      React.createElement(YAxis,{tick:{fill:"#8b92a9",fontSize:12},axisLine:false,tickLine:false}),
-                      React.createElement(Tooltip,TT),
-                      TOL.map(function(t,i){return React.createElement(Line,{key:t,type:"monotone",dataKey:t,stroke:TOC[i],strokeWidth:3,dot:{fill:TOC[i],r:5},name:t});})
-                    )
-                  )
-                );}}>
-                <ResponsiveContainer width="100%" height={240}>
-                  <LineChart data={xhbLine} margin={{top:10,right:20,left:-20,bottom:0}}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#2d3148"/>
-                    <XAxis dataKey="ngay" tick={{fill:"#8b92a9",fontSize:10}} axisLine={false} tickLine={false}/>
-                    <YAxis tick={{fill:"#8b92a9",fontSize:10}} axisLine={false} tickLine={false}/>
-                    <Tooltip {...TT}/>
-                    {TOL.map(function(t,i){return <Line key={t} type="monotone" dataKey={t} stroke={TOC[i]} strokeWidth={2} dot={{fill:TOC[i],r:3}} name={t}/>;}) }
-                  </LineChart>
-                </ResponsiveContainer>
-                <div style={{display:"flex",flexWrap:"wrap",gap:"4px 14px",justifyContent:"center",marginTop:8}}>
-                  {TOL.map(function(t,i){return <span key={t} style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#8b92a9"}}><span style={{width:16,height:3,background:TOC[i],display:"inline-block",borderRadius:2}}/>{t}</span>;})}
-                </div>
-              </SC>
-            </div>
-          )}
-
-          {currentTab==="kenh"&&(
-            <div>
-              <div style={{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}}>
-                <KCard val={(total?((af.filter(function(x){return x.cccd;}).length/total)*100).toFixed(1):0)+"%"} label="CÓ CCCD" color="#3b82f6"/>
-                <KCard val={(total?((noCCCD/total)*100).toFixed(1):0)+"%"} label="THIẾU CCCD" color="#ef4444"/>
-                <KCard val={(total?((af.filter(function(x){return x.email;}).length/total)*100).toFixed(1):0)+"%"} label="CÓ EMAIL" color="#10b981"/>
-                <KCard val={(total?((noEmail/total)*100).toFixed(1):0)+"%"} label="THIẾU EMAIL" color="#f59e0b"/>
-              </div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-                <SC title="Nguồn cấp 1 – Hiệu quả" sub="Tổng hồ sơ và XHB theo kênh">
-                  <ResponsiveContainer width="100%" height={240}>
-                    <ComposedChart data={byKenh} margin={{top:20,right:30,left:-20,bottom:40}}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#2d3148"/>
-                      <XAxis dataKey="name" tick={{fill:"#8b92a9",fontSize:9,angle:-30,textAnchor:"end"}} axisLine={false} tickLine={false}/>
-                      <YAxis yAxisId="left" tick={{fill:"#8b92a9",fontSize:10}} axisLine={false} tickLine={false}/>
-                      <Tooltip {...TT}/>
-                      <Bar yAxisId="left" dataKey="total" fill="#2d3a5a" radius={[3,3,0,0]} name="Tổng"><LabelList dataKey="total" content={BL}/></Bar>
-                      <Bar yAxisId="left" dataKey="xhb" fill="#10b981" radius={[3,3,0,0]} name="XHB"><LabelList dataKey="xhb" content={BL}/></Bar>
-                    </ComposedChart>
-                  </ResponsiveContainer>
-                </SC>
-                <SC title="Phân bổ hồ sơ theo kênh" sub="Tỷ trọng từng kênh">
-                  <ResponsiveContainer width="100%" height={260}>
-                    <PieChart>
-                      <Pie data={byKenh} cx="40%" cy="45%" innerRadius={65} outerRadius={105} dataKey="total" nameKey="name" labelLine={false} label={PL}>
-                        {byKenh.map(function(_,i){return <Cell key={i} fill={C1[i]}/>;}) }
-                      </Pie>
-                      <Tooltip {...TT}/>
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div style={{display:"flex",flexWrap:"wrap",gap:"4px 12px",justifyContent:"center"}}>
-                    {byKenh.map(function(k,i){return <span key={i} style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#8b92a9"}}><span style={{width:8,height:8,borderRadius:2,background:C1[i],display:"inline-block"}}/>{k.name}</span>;})}
-                  </div>
-                </SC>
-              </div>
-            </div>
-          )}
-
-          {currentTab==="diem"&&(
-            <div>
-              <div style={{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}}>
-                <KCard val={avgTBM} label="TBM TB" pct="Thang 0-10" color="#3b82f6"/>
-                <KCard val={avgTH} label="TỔ HỢP TB" pct="Thang 0-30" color="#10b981"/>
-                <KCard val={avgDGNL} label="ĐGNL TB" pct="Thang 0-1200" color="#8b5cf6"/>
-                <KCard val={dTBM.length} label="CÓ ĐIỂM TBM" color="#f59e0b"/>
-              </div>
-              <div style={{display:"grid",gridTemplateColumns:"2fr 1fr",gap:14}}>
-                <SC title="Điểm TBM theo Ngành (Top 10)" sub="Điểm trung bình môn">
-                  <ResponsiveContainer width="100%" height={280}>
-                    <BarChart data={byMajor} layout="vertical" margin={{top:0,right:60,left:100,bottom:0}}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#2d3148" horizontal={false}/>
-                      <XAxis type="number" domain={[6,11]} tick={{fill:"#8b92a9",fontSize:10}} axisLine={false} tickLine={false}/>
-                      <YAxis dataKey="name" type="category" tick={{fill:"#8b92a9",fontSize:10}} axisLine={false} tickLine={false} width={95}/>
-                      <Tooltip {...TT}/>
-                      <Bar dataKey="avg" radius={[0,4,4,0]}>
-                        <LabelList dataKey="avg" position="insideRight" formatter={function(v){return Number(v).toFixed(2);}} style={{fill:"#fff",fontSize:11,fontWeight:700}}/>
-                        {byMajor.map(function(_,i){return <Cell key={i} fill={i===0?"#ef4444":i===byMajor.length-1?"#10b981":"#3b82f6"}/>;}) }
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </SC>
-                <SC title="Radar TBM theo Ngành">
-                  <ResponsiveContainer width="100%" height={280}>
-                    <RadarChart data={radarData} margin={{top:10,right:30,left:30,bottom:10}}>
-                      <PolarGrid stroke="#2d3148"/>
-                      <PolarAngleAxis dataKey="subject" tick={function(props){
-                        var x=props.x,y=props.y,payload=props.payload,cx=props.cx,cy=props.cy;
-                        var val=radarData.find(function(d){return d.subject===payload.value;});
-                        var tbm=val?val.TBM:0;
-                        return(
-                          <g>
-                            <text x={x} y={y} textAnchor={x>cx?"start":x<cx?"end":"middle"} dominantBaseline="central" fill="#8b92a9" fontSize={10}>{payload.value}</text>
-                            <text x={x} y={y+13} textAnchor={x>cx?"start":x<cx?"end":"middle"} dominantBaseline="central" fill="#f59e0b" fontSize={11} fontWeight={700}>{tbm?Number(tbm).toFixed(2):""}</text>
-                          </g>
-                        );
-                      }}/>
-                      <Radar name="TBM" dataKey="TBM" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.35} dot={{fill:"#3b82f6",r:4}}/>
-                      <Tooltip {...TT} formatter={function(v){return Number(v).toFixed(2);}}/>
-                    </RadarChart>
-                  </ResponsiveContainer>
-                </SC>
-              </div>
-            </div>
-          )}
-
-          {currentTab==="dialy"&&(
-            <div>
-              <div style={{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}}>
-                <KCard val={(byTinh[0]&&byTinh[0].value||0).toLocaleString()} label={byTinh[0]&&byTinh[0].name||"TP.HCM"} pct={(total?((byTinh[0]&&byTinh[0].value||0)/total*100).toFixed(1):0)+"% tổng"} color="#3b82f6"/>
-                <KCard val={(byTinh[1]&&byTinh[1].value||0).toLocaleString()} label={byTinh[1]&&byTinh[1].name||""} pct="Đứng thứ 2" color="#10b981"/>
-                <KCard val={(byTinh[2]&&byTinh[2].value||0).toLocaleString()} label={byTinh[2]&&byTinh[2].name||""} pct="Đứng thứ 3" color="#f59e0b"/>
-                <KCard val={byTinh.length} label="TỈNH/THÀNH PHỐ" color="#8b5cf6"/>
-              </div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-                <SC title="Phân bổ theo Tỉnh/Thành phố" sub="Top 10">
-                  <ResponsiveContainer width="100%" height={280}>
-                    <BarChart data={byTinh.slice(0,10)} layout="vertical" margin={{top:0,right:50,left:90,bottom:0}}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#2d3148" horizontal={false}/>
-                      <XAxis type="number" tick={{fill:"#8b92a9",fontSize:10}} axisLine={false} tickLine={false}/>
-                      <YAxis dataKey="name" type="category" tick={{fill:"#8b92a9",fontSize:10}} axisLine={false} tickLine={false}/>
-                      <Tooltip {...TT}/>
-                      <Bar dataKey="value" radius={[0,4,4,0]}>
-                        <LabelList dataKey="value" position="right" style={{fill:"#e8eaf0",fontSize:11,fontWeight:600}}/>
-                        {byTinh.slice(0,10).map(function(_,i){return <Cell key={i} fill={C1[i%10]}/>;}) }
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </SC>
-                <SC title="Top 8 Tỉnh – Tỷ trọng">
-                  <ResponsiveContainer width="100%" height={280}>
-                    <PieChart>
-                      <Pie data={byTinh.slice(0,8)} cx="40%" cy="45%" innerRadius={60} outerRadius={105} dataKey="value" nameKey="name" labelLine={false} label={PL}>
-                        {byTinh.slice(0,8).map(function(_,i){return <Cell key={i} fill={C1[i]}/>;}) }
-                      </Pie>
-                      <Tooltip {...TT}/>
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div style={{display:"flex",flexWrap:"wrap",gap:"4px 10px",justifyContent:"center"}}>
-                    {byTinh.slice(0,8).map(function(t,i){return <span key={i} style={{display:"flex",alignItems:"center",gap:4,fontSize:10,color:"#8b92a9"}}><span style={{width:7,height:7,borderRadius:2,background:C1[i],display:"inline-block"}}/>{t.name}</span>;})}
-                  </div>
-                </SC>
-              </div>
-            </div>
-          )}
-
-          {currentTab==="phanloai"&&(
-            <div>
-              <div style={{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}}>
-                <KCard val={dTBM.length.toLocaleString()} label="CÓ ĐIỂM TBM" pct={(total?((dTBM.length/total)*100).toFixed(1):0)+"%"} color="#3b82f6"/>
-                <KCard val={dTH.length.toLocaleString()} label="CÓ TỔ HỢP" pct={(total?((dTH.length/total)*100).toFixed(1):0)+"%"} color="#10b981"/>
-                <KCard val={dDGNL.length.toLocaleString()} label="CÓ ĐGNL" pct={(total?((dDGNL.length/total)*100).toFixed(1):0)+"%"} color="#8b5cf6"/>
-                <KCard val={avgDGNL} label="TB ĐIỂM ĐGNL" color="#f59e0b"/>
-              </div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginBottom:14}}>
-                <SC title="Điểm TBM (Học bạ)" sub={"TB: "+avgTBM}>
-                  <ResponsiveContainer width="100%" height={180}>
-                    <BarChart data={tbmH} margin={{top:20,right:0,left:-25,bottom:0}}>
-                      <XAxis dataKey="r" tick={{fill:"#8b92a9",fontSize:9}} axisLine={false} tickLine={false}/>
-                      <YAxis tick={{fill:"#8b92a9",fontSize:9}} axisLine={false} tickLine={false}/>
-                      <Tooltip {...TT}/>
-                      <Bar dataKey="v"><LabelList dataKey="v" content={BL}/>{tbmH.map(function(_,i){return <Cell key={i} fill={HC[i]}/>;}) }</Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </SC>
-                <SC title="Điểm Tổ hợp môn" sub={"TB: "+avgTH}>
-                  <ResponsiveContainer width="100%" height={180}>
-                    <BarChart data={thH} margin={{top:20,right:0,left:-25,bottom:0}}>
-                      <XAxis dataKey="r" tick={{fill:"#8b92a9",fontSize:9}} axisLine={false} tickLine={false}/>
-                      <YAxis tick={{fill:"#8b92a9",fontSize:9}} axisLine={false} tickLine={false}/>
-                      <Tooltip {...TT}/>
-                      <Bar dataKey="v"><LabelList dataKey="v" content={BL}/>{thH.map(function(_,i){return <Cell key={i} fill={HC[i]}/>;}) }</Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </SC>
-                <SC title="Điểm ĐGNL" sub={"TB: "+avgDGNL}>
-                  {[["< 650","#ef4444",[0,650]],[" 650-750","#f59e0b",[650,750]],["750-850","#10b981",[750,850]],["850+","#3b82f6",[850,9999]]].map(function(item,i){
-                    var cnt=dDGNL.filter(function(x){return x>=item[2][0]&&x<item[2][1];}).length;
-                    var pct=dDGNL.length?((cnt/dDGNL.length)*100).toFixed(0):0;
-                    return(
-                      <div key={i} style={{display:"flex",alignItems:"center",gap:8,marginTop:10}}>
-                        <span style={{width:60,fontSize:11,color:"#8b92a9",flexShrink:0}}>{item[0]}</span>
-                        <div style={{flex:1,background:"#2d3148",borderRadius:3,height:22,overflow:"hidden",position:"relative"}}>
-                          <div style={{width:pct+"%",height:"100%",background:item[1],borderRadius:3}}/>
-                          <span style={{position:"absolute",left:8,top:"50%",transform:"translateY(-50%)",color:"#fff",fontSize:11,fontWeight:700}}>{cnt}</span>
-                        </div>
-                        <span style={{fontSize:10,color:"#8b92a9",minWidth:28,textAlign:"right"}}>{pct}%</span>
-                      </div>
-                    );
-                  })}
-                </SC>
-              </div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 2fr",gap:14}}>
-                <SC title="Tỷ lệ phổ theo phương thức">
-                  <ResponsiveContainer width="100%" height={180}>
-                    <BarChart data={[{name:"TBM",co:dTBM.length,k:total-dTBM.length},{name:"Tổ hợp",co:dTH.length,k:total-dTH.length},{name:"ĐGNL",co:dDGNL.length,k:total-dDGNL.length}]} margin={{top:20,right:0,left:-20,bottom:0}}>
-                      <XAxis dataKey="name" tick={{fill:"#8b92a9",fontSize:10}} axisLine={false} tickLine={false}/>
-                      <YAxis tick={{fill:"#8b92a9",fontSize:10}} axisLine={false} tickLine={false}/>
-                      <Tooltip {...TT}/>
-                      <Bar dataKey="co" fill="#3b82f6" name="Có điểm" stackId="a"><LabelList dataKey="co" content={BL}/></Bar>
-                      <Bar dataKey="k" fill="#2d3148" name="Không có" stackId="a"/>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </SC>
-                <SC title="Điểm TBM: XHB và Không XHB" sub="So sánh điểm trung bình 2 nhóm">
-                  <div style={{display:"flex",gap:12,marginTop:8}}>
-                    {[{g:"Có XHB",c:"#10b981"},{g:"Không XHB",c:"#ef4444"}].map(function(item,i){
-                      var group=af.filter(function(x){return x.xhb===item.g&&x.diem_tbm;});
-                      var avg=group.length?(group.reduce(function(a,x){return a+(x.diem_tbm||0);},0)/group.length).toFixed(2):0;
-                      return(
-                        <div key={i} style={{flex:1,background:"#1a2540",border:"1px solid "+item.c+"44",borderRadius:8,padding:"20px",textAlign:"center"}}>
-                          <div style={{fontSize:36,fontWeight:800,color:item.c}}>{avg}</div>
-                          <div style={{fontSize:12,color:"#8b92a9",marginTop:6}}>{item.g}</div>
-                          <div style={{fontSize:11,color:"#8b92a9"}}>{group.length} thí sinh</div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </SC>
-              </div>
-            </div>
-          )}
-
-          {currentTab==="ai"&&(
-            <div style={{maxWidth:800}}>
-              <div style={{background:"#1a1f35",border:"1px solid #3b82f688",borderRadius:10,padding:"20px",marginBottom:14}}>
-                <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
-                  <span style={{fontSize:28}}>🤖</span>
-                  <div>
-                    <div style={{fontWeight:700,color:"#e8eaf0",fontSize:15}}>AI Insight</div>
-                    <div style={{fontSize:11,color:"#8b92a9",marginTop:2}}>{total.toLocaleString()} hồ sơ · Claude AI</div>
-                  </div>
-                </div>
-                <button onClick={handleAI} disabled={aiLd} style={{background:aiLd?"#2d3148":"linear-gradient(135deg,#3b82f6,#8b5cf6)",border:"none",color:"#fff",borderRadius:8,padding:"11px 0",fontSize:14,fontWeight:600,width:"100%",cursor:"pointer"}}>
-                  {aiLd?"⏳ Đang phân tích...":"✨ Phân tích ngay"}
-                </button>
-              </div>
-              {aiTxt&&(
-                <div style={{background:"#161b2e",border:"1px solid #2d3148",borderRadius:10,padding:"20px"}}>
-                  <div style={{fontSize:12,color:"#3b82f6",fontWeight:700,marginBottom:12}}>🤖 Kết quả</div>
-                  <div style={{fontSize:13,color:"#c8cde0",lineHeight:1.9,whiteSpace:"pre-wrap"}}>{aiTxt}</div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {currentTab==="data"&&(
-            <div>
-              <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"flex-end",marginBottom:10}}>
-                <div style={{flex:1,minWidth:160}}>
-                  <div style={{fontSize:10,color:"#8b92a9",marginBottom:3}}>🔍 Tìm kiếm</div>
-                  <input placeholder="Tên, SĐT..." value={srch} onChange={function(e){setSrch(e.target.value);setPg(1);}} style={Object.assign({},inp,{width:"100%"})}/>
-                </div>
-                {[[tinhL,fTinh,setFTinh,"🗺️ Tỉnh/Thành"],[stL,fSt,setFSt,"📌 Tiến trình"],[tsL,fTs,setFTs,"👤 Tổ tư vấn"]].map(function(item,i){
-                  return(
-                    <div key={i}>
-                      <div style={{fontSize:10,color:"#8b92a9",marginBottom:3}}>{item[3]}</div>
-                      <select value={item[1]} onChange={function(e){item[2](e.target.value);setPg(1);}} style={inp}>
-                        {item[0].map(function(t){return <option key={t}>{t}</option>;})}
-                      </select>
-                    </div>
+          // TIẾN TRÌNH
+          currentTab==="funnel"&&h("div",null,
+            h("div",{style:{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}},
+              h(KCard,{val:total.toLocaleString(),label:"TỔNG HỒ SƠ",color:"#3b82f6"}),
+              h(KCard,{val:xhb.toLocaleString(),label:"XÉT HỌC BẠ",pct:(total?((xhb/total)*100).toFixed(1):0)+"% tổng",color:"#10b981"}),
+              h(KCard,{val:tiepcan.toLocaleString(),label:"ĐANG TIẾP CẬN",pct:(total?((tiepcan/total)*100).toFixed(1):0)+"% tổng",color:"#f59e0b"}),
+              h(KCard,{val:fail.toLocaleString(),label:"FAIL",pct:(total?((fail/total)*100).toFixed(1):0)+"% tổng",color:"#ef4444"})
+            ),
+            h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}},
+              h(SC,{title:"Phễu Chuyển đổi",sub:"Số lượng thí sinh tại từng giai đoạn"},
+                byStatus.map(function(s,i){
+                  var pct=total?((s.v/total)*100).toFixed(1):0;
+                  return h("div",{key:i,style:{display:"flex",alignItems:"center",gap:10,marginBottom:10}},
+                    h("span",{style:{width:80,fontSize:12,color:"#8b92a9",textAlign:"right",flexShrink:0}},s.name),
+                    h("div",{style:{flex:1,background:"#2d3148",borderRadius:4,height:28,overflow:"hidden",position:"relative"}},
+                      h("div",{style:{width:pct+"%",height:"100%",background:C1[i],borderRadius:4}}),
+                      h("span",{style:{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",color:"#fff",fontSize:12,fontWeight:700}},s.v.toLocaleString())
+                    ),
+                    h("span",{style:{fontSize:12,fontWeight:600,color:C1[i],minWidth:40,textAlign:"right"}},s.v),
+                    h("span",{style:{fontSize:11,color:"#8b92a9",minWidth:42,textAlign:"right"}},pct+"%")
                   );
-                })}
-                <span style={{fontSize:11,color:"#8b92a9",paddingBottom:6}}>{filtered.length} kết quả</span>
-              </div>
-              <div style={{background:"#161b2e",border:"1px solid #2d3148",borderRadius:10,overflow:"hidden"}}>
-                <div style={{overflowX:"auto"}}>
-                  <table style={{width:"100%",borderCollapse:"collapse"}}>
-                    <thead>
-                      <tr style={{background:"#0e1117"}}>
-                        {[["name","Họ tên"],["phone","SĐT"],["province","Tỉnh"],["major","Ngành"],["status","Tiến trình"],["telesales","Tổ"],["diem_tbm","TBM"],["cccd","CCCD"],["email","Email"],["created_at","Ngày"]].map(function(item){
-                          return <th key={item[0]} onClick={function(){doSort(item[0]);}} style={thS}>{item[1]}{sCol===item[0]?(sDir==="asc"?" ↑":" ↓"):""}</th>;
-                        })}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {paged.length===0
-                        ?<tr><td colSpan={10} style={{padding:"24px",textAlign:"center",color:"#8b92a9"}}>Không có dữ liệu</td></tr>
-                        :paged.map(function(r,i){
-                          return(
-                            <tr key={i} style={{borderBottom:"1px solid #1a1f35",background:i%2===0?"transparent":"#111620"}}>
-                              <td style={Object.assign({},tdS,{color:"#e8eaf0",fontWeight:500})}>{r.name||"—"}</td>
-                              <td style={tdS}>{r.phone||"—"}</td>
-                              <td style={tdS}>{r.province||"—"}</td>
-                              <td style={tdS}><span style={{background:"#2d3148",borderRadius:4,padding:"2px 7px",fontSize:10}}>{r.major||"—"}</span></td>
-                              <td style={tdS}><span style={{borderRadius:4,padding:"2px 6px",color:sc(r.status),background:sc(r.status)+"22",fontSize:10}}>{r.status||"—"}</span></td>
-                              <td style={tdS}>{r.telesales||"—"}</td>
-                              <td style={Object.assign({},tdS,{color:"#f59e0b",fontWeight:600})}>{r.diem_tbm?Number(r.diem_tbm).toFixed(2):"—"}</td>
-                              <td style={tdS}><span style={{color:r.cccd?"#10b981":"#ef4444",fontWeight:700}}>{r.cccd?"✓":"✗"}</span></td>
-                              <td style={tdS}><span style={{color:r.email?"#10b981":"#ef4444",fontWeight:700}}>{r.email?"✓":"✗"}</span></td>
-                              <td style={Object.assign({},tdS,{color:"#8b92a9"})}>{r.created_at||"—"}</td>
-                            </tr>
-                          );
-                        })
-                      }
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10}}>
-                <span style={{fontSize:11,color:"#8b92a9"}}>Trang {pg}/{pages} · {filtered.length} bản ghi</span>
-                <div style={{display:"flex",gap:4}}>
-                  <button onClick={function(){setPg(function(p){return Math.max(1,p-1);});}} disabled={pg===1} style={Object.assign({},inp,{cursor:"pointer",opacity:pg===1?0.4:1,padding:"4px 10px"})}>‹</button>
-                  {Array.from({length:Math.min(pages,7)},function(_,i){return i+1;}).map(function(p){
-                    return <button key={p} onClick={function(){setPg(p);}} style={Object.assign({},inp,{background:p===pg?"#3b82f6":"#1e2130",border:"1px solid "+(p===pg?"#3b82f6":"#2d3148"),color:p===pg?"#fff":"#c8cde0",cursor:"pointer",minWidth:28,padding:"4px 8px"})}>{p}</button>;
-                  })}
-                  <button onClick={function(){setPg(function(p){return Math.min(pages,p+1);});}} disabled={pg===pages} style={Object.assign({},inp,{cursor:"pointer",opacity:pg===pages?0.4:1,padding:"4px 10px"})}>›</button>
-                </div>
-              </div>
-            </div>
-          )}
+                })
+              ),
+              h(SC,{title:"XHB theo Tổ tư vấn",sub:"Số hồ sơ Xét Học bạ của từng Tổ"},
+                h(ResponsiveContainer,{width:"100%",height:240},
+                  h(BarChart,{data:byTo,margin:{top:20,right:20,left:-20,bottom:0}},
+                    h(CartesianGrid,{strokeDasharray:"3 3",stroke:"#2d3148"}),
+                    h(XAxis,{dataKey:"name",tick:{fill:"#8b92a9",fontSize:11},axisLine:false,tickLine:false}),
+                    h(YAxis,{tick:{fill:"#8b92a9",fontSize:11},axisLine:false,tickLine:false}),
+                    h(Tooltip,TT),
+                    h(Bar,{dataKey:"xhb",fill:"#10b981",radius:[4,4,0,0],name:"XHB"},h(LabelList,{dataKey:"xhb",content:BL}))
+                  )
+                )
+              )
+            ),
+            h(SC,{title:"Tiến trình theo Tổ tư vấn",sub:"So sánh từng giai đoạn giữa các Tổ",style:{marginBottom:14}},
+              h(ResponsiveContainer,{width:"100%",height:260},
+                h(BarChart,{data:gpData,margin:{top:20,right:10,left:0,bottom:0},barCategoryGap:"10%",barGap:1},
+                  h(CartesianGrid,{strokeDasharray:"3 3",stroke:"#2d3148"}),
+                  h(XAxis,{dataKey:"name",tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),
+                  h(YAxis,{tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),
+                  h(Tooltip,TT),
+                  STL.map(function(s,i){return h(Bar,{key:s,dataKey:s,fill:C1[i],radius:[3,3,0,0],name:s},h(LabelList,{dataKey:s,content:BL}));})
+                )
+              ),
+              h("div",{style:{display:"flex",flexWrap:"wrap",gap:"4px 14px",justifyContent:"center",marginTop:8}},
+                STL.map(function(s,i){return h("span",{key:s,style:{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#8b92a9"}},h("span",{style:{width:8,height:8,borderRadius:2,background:C1[i],display:"inline-block"}}),s);})
+              )
+            ),
+            h(SC,{title:"XHB theo ngày của từng Tổ",sub:"14 ngày gần nhất"},
+              h(ResponsiveContainer,{width:"100%",height:240},
+                h(LineChart,{data:xhbLine,margin:{top:10,right:20,left:-20,bottom:0}},
+                  h(CartesianGrid,{strokeDasharray:"3 3",stroke:"#2d3148"}),
+                  h(XAxis,{dataKey:"ngay",tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),
+                  h(YAxis,{tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),
+                  h(Tooltip,TT),
+                  TOL.map(function(t,i){return h(Line,{key:t,type:"monotone",dataKey:t,stroke:TOC[i],strokeWidth:2,dot:{fill:TOC[i],r:3},name:t});})
+                )
+              ),
+              h("div",{style:{display:"flex",flexWrap:"wrap",gap:"4px 14px",justifyContent:"center",marginTop:8}},
+                TOL.map(function(t,i){return h("span",{key:t,style:{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#8b92a9"}},h("span",{style:{width:16,height:3,background:TOC[i],display:"inline-block",borderRadius:2}}),t);})
+              )
+            )
+          ),
 
-          {currentTab==="upload"&&(
-            <div style={{maxWidth:560}}>
-              <div style={{background:"#161b2e",border:"2px dashed #3b82f655",borderRadius:12,padding:"40px 20px",textAlign:"center",cursor:"pointer"}} onClick={function(){fileRef.current.click();}}>
-                <div style={{fontSize:40,marginBottom:12}}>📂</div>
-                <p style={{color:"#e8eaf0",fontWeight:700,margin:"0 0 6px",fontSize:14}}>Kéo thả hoặc click để chọn file</p>
-                <p style={{color:"#8b92a9",fontSize:12,margin:0}}>Hỗ trợ .xlsx · .xls · .csv · ~200k rows</p>
-              </div>
-              {uploadPct>0&&uploadPct<100&&(
-                <div style={{marginTop:12}}>
-                  <div style={{background:"#2d3148",borderRadius:4,height:8,overflow:"hidden"}}><div style={{width:uploadPct+"%",height:"100%",background:"#3b82f6",borderRadius:4,transition:"width .3s"}}/></div>
-                  <div style={{fontSize:11,color:"#8b92a9",marginTop:4}}>{uploadPct}%</div>
-                </div>
-              )}
-              {uploadMsg&&<div style={{background:uploadMsg.startsWith("✅")?"#10b98122":"#ef444422",border:"1px solid "+(uploadMsg.startsWith("✅")?"#10b981":"#ef4444")+"66",borderRadius:8,padding:"10px 14px",color:uploadMsg.startsWith("✅")?"#10b981":"#ef4444",fontSize:13,marginTop:12}}>{uploadMsg}</div>}
-              <div style={{background:"#161b2e",border:"1px solid #2d3148",borderRadius:10,padding:"14px 18px",marginTop:14}}>
-                <div style={{fontWeight:600,color:"#c8cde0",marginBottom:6,fontSize:12}}>Cột Excel được nhận:</div>
-                {["Họ và tên","Di động","Tỉnh/ Thành phố","NGÀNH ĐKXT NV1","Tiến trình","Tổ","Nguồn_DHV cấp 1","Số CCCD/ Mã số định danh","Email","Điểm TBM","Điểm Tổ hợp môn","Điểm DGNL"].map(function(c){
-                  return <span key={c} style={{display:"inline-block",background:"#2d3148",borderRadius:4,padding:"2px 8px",margin:"2px",fontSize:11}}>{c}</span>;
-                })}
-              </div>
-            </div>
-          )}
+          // KÊNH
+          currentTab==="kenh"&&h("div",null,
+            h("div",{style:{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}},
+              h(KCard,{val:(total?((af.filter(function(x){return x.cccd;}).length/total)*100).toFixed(1):0)+"%",label:"CÓ CCCD",color:"#3b82f6"}),
+              h(KCard,{val:(total?((noCCCD/total)*100).toFixed(1):0)+"%",label:"THIẾU CCCD",color:"#ef4444"}),
+              h(KCard,{val:(total?((af.filter(function(x){return x.email;}).length/total)*100).toFixed(1):0)+"%",label:"CÓ EMAIL",color:"#10b981"}),
+              h(KCard,{val:(total?((noEmail/total)*100).toFixed(1):0)+"%",label:"THIẾU EMAIL",color:"#f59e0b"})
+            ),
+            h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}},
+              h(SC,{title:"Nguồn cấp 1 – Hiệu quả",sub:"Tổng hồ sơ và XHB theo kênh"},
+                h(ResponsiveContainer,{width:"100%",height:240},
+                  h(ComposedChart,{data:byKenh,margin:{top:20,right:30,left:-20,bottom:40}},
+                    h(CartesianGrid,{strokeDasharray:"3 3",stroke:"#2d3148"}),
+                    h(XAxis,{dataKey:"name",tick:{fill:"#8b92a9",fontSize:9,angle:-30,textAnchor:"end"},axisLine:false,tickLine:false}),
+                    h(YAxis,{yAxisId:"left",tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),
+                    h(Tooltip,TT),
+                    h(Bar,{yAxisId:"left",dataKey:"total",fill:"#2d3a5a",radius:[3,3,0,0],name:"Tổng"},h(LabelList,{dataKey:"total",content:BL})),
+                    h(Bar,{yAxisId:"left",dataKey:"xhb",fill:"#10b981",radius:[3,3,0,0],name:"XHB"},h(LabelList,{dataKey:"xhb",content:BL}))
+                  )
+                )
+              ),
+              h(SC,{title:"Phân bổ hồ sơ theo kênh",sub:"Tỷ trọng từng kênh"},
+                h(ResponsiveContainer,{width:"100%",height:240},
+                  h(PieChart,null,
+                    h(Pie,{data:byKenh,cx:"40%",cy:"45%",innerRadius:65,outerRadius:105,dataKey:"total",nameKey:"name",labelLine:false,label:PL},
+                      byKenh.map(function(_,i){return h(Cell,{key:i,fill:C1[i]});})
+                    ),
+                    h(Tooltip,TT)
+                  )
+                ),
+                h("div",{style:{display:"flex",flexWrap:"wrap",gap:"4px 12px",justifyContent:"center"}},
+                  byKenh.map(function(k,i){return h("span",{key:i,style:{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#8b92a9"}},h("span",{style:{width:8,height:8,borderRadius:2,background:C1[i],display:"inline-block"}}),k.name);})
+                )
+              )
+            )
+          ),
 
-          </div>
-        </div>
+          // ĐIỂM SỐ
+          currentTab==="diem"&&h("div",null,
+            h("div",{style:{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}},
+              h(KCard,{val:avgTBM,label:"TBM TB",pct:"Thang 0-10",color:"#3b82f6"}),
+              h(KCard,{val:avgTH,label:"TỔ HỢP TB",pct:"Thang 0-30",color:"#10b981"}),
+              h(KCard,{val:avgDGNL,label:"ĐGNL TB",pct:"Thang 0-1200",color:"#8b5cf6"}),
+              h(KCard,{val:dTBM.length,label:"CÓ ĐIỂM TBM",color:"#f59e0b"})
+            ),
+            h("div",{style:{display:"grid",gridTemplateColumns:"2fr 1fr",gap:14}},
+              h(SC,{title:"Điểm TBM theo Ngành (Top 10)",sub:"Điểm trung bình môn"},
+                h(ResponsiveContainer,{width:"100%",height:280},
+                  h(BarChart,{data:byMajor,layout:"vertical",margin:{top:0,right:60,left:100,bottom:0}},
+                    h(CartesianGrid,{strokeDasharray:"3 3",stroke:"#2d3148",horizontal:false}),
+                    h(XAxis,{type:"number",domain:[6,11],tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),
+                    h(YAxis,{dataKey:"name",type:"category",tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false,width:95}),
+                    h(Tooltip,TT),
+                    h(Bar,{dataKey:"avg",radius:[0,4,4,0]},
+                      h(LabelList,{dataKey:"avg",position:"insideRight",formatter:function(v){return Number(v).toFixed(2);},style:{fill:"#fff",fontSize:11,fontWeight:700}}),
+                      byMajor.map(function(_,i){return h(Cell,{key:i,fill:i===0?"#ef4444":i===byMajor.length-1?"#10b981":"#3b82f6"});})
+                    )
+                  )
+                )
+              ),
+              h(SC,{title:"Radar TBM theo Ngành"},
+                h(ResponsiveContainer,{width:"100%",height:280},
+                  h(RadarChart,{data:radarData,margin:{top:10,right:30,left:30,bottom:10}},
+                    h(PolarGrid,{stroke:"#2d3148"}),
+                    h(PolarAngleAxis,{dataKey:"subject",tick:function(props){
+                      var x=props.x,y=props.y,payload=props.payload,cx=props.cx;
+                      var val=radarData.find(function(d){return d.subject===payload.value;});
+                      var tbm=val?val.TBM:0;
+                      return h("g",null,
+                        h("text",{x,y,textAnchor:x>cx?"start":"end",dominantBaseline:"central",fill:"#8b92a9",fontSize:10},payload.value),
+                        h("text",{x,y:y+13,textAnchor:x>cx?"start":"end",dominantBaseline:"central",fill:"#f59e0b",fontSize:11,fontWeight:700},tbm?Number(tbm).toFixed(2):"")
+                      );
+                    }}),
+                    h(Radar,{name:"TBM",dataKey:"TBM",stroke:"#3b82f6",fill:"#3b82f6",fillOpacity:0.35,dot:{fill:"#3b82f6",r:4}}),
+                    h(Tooltip,Object.assign({},TT,{formatter:function(v){return Number(v).toFixed(2);}}))
+                  )
+                )
+              )
+            )
+          ),
+
+          // ĐỊA LÝ
+          currentTab==="dialy"&&h("div",null,
+            h("div",{style:{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}},
+              h(KCard,{val:(byTinh[0]&&byTinh[0].value||0).toLocaleString(),label:byTinh[0]&&byTinh[0].name||"TP.HCM",pct:(total?((byTinh[0]&&byTinh[0].value||0)/total*100).toFixed(1):0)+"% tổng",color:"#3b82f6"}),
+              h(KCard,{val:(byTinh[1]&&byTinh[1].value||0).toLocaleString(),label:byTinh[1]&&byTinh[1].name||"",pct:"Đứng thứ 2",color:"#10b981"}),
+              h(KCard,{val:(byTinh[2]&&byTinh[2].value||0).toLocaleString(),label:byTinh[2]&&byTinh[2].name||"",pct:"Đứng thứ 3",color:"#f59e0b"}),
+              h(KCard,{val:byTinh.length,label:"TỈNH/THÀNH PHỐ",color:"#8b5cf6"})
+            ),
+            h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}},
+              h(SC,{title:"Phân bổ theo Tỉnh/Thành phố",sub:"Top 10"},
+                h(ResponsiveContainer,{width:"100%",height:280},
+                  h(BarChart,{data:byTinh.slice(0,10),layout:"vertical",margin:{top:0,right:50,left:90,bottom:0}},
+                    h(CartesianGrid,{strokeDasharray:"3 3",stroke:"#2d3148",horizontal:false}),
+                    h(XAxis,{type:"number",tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),
+                    h(YAxis,{dataKey:"name",type:"category",tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),
+                    h(Tooltip,TT),
+                    h(Bar,{dataKey:"value",radius:[0,4,4,0]},
+                      h(LabelList,{dataKey:"value",position:"right",style:{fill:"#e8eaf0",fontSize:11,fontWeight:600}}),
+                      byTinh.slice(0,10).map(function(_,i){return h(Cell,{key:i,fill:C1[i%10]});})
+                    )
+                  )
+                )
+              ),
+              h(SC,{title:"Top 8 Tỉnh – Tỷ trọng"},
+                h(ResponsiveContainer,{width:"100%",height:260},
+                  h(PieChart,null,
+                    h(Pie,{data:byTinh.slice(0,8),cx:"40%",cy:"45%",innerRadius:60,outerRadius:105,dataKey:"value",nameKey:"name",labelLine:false,label:PL},
+                      byTinh.slice(0,8).map(function(_,i){return h(Cell,{key:i,fill:C1[i]});})
+                    ),
+                    h(Tooltip,TT)
+                  )
+                ),
+                h("div",{style:{display:"flex",flexWrap:"wrap",gap:"4px 10px",justifyContent:"center"}},
+                  byTinh.slice(0,8).map(function(t,i){return h("span",{key:i,style:{display:"flex",alignItems:"center",gap:4,fontSize:10,color:"#8b92a9"}},h("span",{style:{width:7,height:7,borderRadius:2,background:C1[i],display:"inline-block"}}),t.name);})
+                )
+              )
+            )
+          ),
+
+          // PHÂN TÍCH 3 LOẠI ĐIỂM
+          currentTab==="phanloai"&&h("div",null,
+            h("div",{style:{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}},
+              h(KCard,{val:dTBM.length.toLocaleString(),label:"CÓ ĐIỂM TBM",pct:(total?((dTBM.length/total)*100).toFixed(1):0)+"%",color:"#3b82f6"}),
+              h(KCard,{val:dTH.length.toLocaleString(),label:"CÓ TỔ HỢP",pct:(total?((dTH.length/total)*100).toFixed(1):0)+"%",color:"#10b981"}),
+              h(KCard,{val:dDGNL.length.toLocaleString(),label:"CÓ ĐGNL",pct:(total?((dDGNL.length/total)*100).toFixed(1):0)+"%",color:"#8b5cf6"}),
+              h(KCard,{val:avgDGNL,label:"TB ĐIỂM ĐGNL",color:"#f59e0b"})
+            ),
+            h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginBottom:14}},
+              h(SC,{title:"Điểm TBM (Học bạ)",sub:"TB: "+avgTBM},
+                h(ResponsiveContainer,{width:"100%",height:180},h(BarChart,{data:tbmH,margin:{top:20,right:0,left:-25,bottom:0}},h(XAxis,{dataKey:"r",tick:{fill:"#8b92a9",fontSize:9},axisLine:false,tickLine:false}),h(YAxis,{tick:{fill:"#8b92a9",fontSize:9},axisLine:false,tickLine:false}),h(Tooltip,TT),h(Bar,{dataKey:"v"},h(LabelList,{dataKey:"v",content:BL}),tbmH.map(function(_,i){return h(Cell,{key:i,fill:HC[i]});}))))
+              ),
+              h(SC,{title:"Điểm Tổ hợp môn",sub:"TB: "+avgTH},
+                h(ResponsiveContainer,{width:"100%",height:180},h(BarChart,{data:thH,margin:{top:20,right:0,left:-25,bottom:0}},h(XAxis,{dataKey:"r",tick:{fill:"#8b92a9",fontSize:9},axisLine:false,tickLine:false}),h(YAxis,{tick:{fill:"#8b92a9",fontSize:9},axisLine:false,tickLine:false}),h(Tooltip,TT),h(Bar,{dataKey:"v"},h(LabelList,{dataKey:"v",content:BL}),thH.map(function(_,i){return h(Cell,{key:i,fill:HC[i]});}))))
+              ),
+              h(SC,{title:"Điểm ĐGNL",sub:"TB: "+avgDGNL},
+                [["< 650","#ef4444",[0,650]],[" 650-750","#f59e0b",[650,750]],["750-850","#10b981",[750,850]],["850+","#3b82f6",[850,9999]]].map(function(item,i){
+                  var cnt=dDGNL.filter(function(x){return x>=item[2][0]&&x<item[2][1];}).length;
+                  var pct=dDGNL.length?((cnt/dDGNL.length)*100).toFixed(0):0;
+                  return h("div",{key:i,style:{display:"flex",alignItems:"center",gap:8,marginTop:10}},
+                    h("span",{style:{width:60,fontSize:11,color:"#8b92a9",flexShrink:0}},item[0]),
+                    h("div",{style:{flex:1,background:"#2d3148",borderRadius:3,height:22,overflow:"hidden",position:"relative"}},
+                      h("div",{style:{width:pct+"%",height:"100%",background:item[1],borderRadius:3}}),
+                      h("span",{style:{position:"absolute",left:8,top:"50%",transform:"translateY(-50%)",color:"#fff",fontSize:11,fontWeight:700}},cnt)
+                    ),
+                    h("span",{style:{fontSize:10,color:"#8b92a9",minWidth:28,textAlign:"right"}},pct+"%")
+                  );
+                })
+              )
+            ),
+            h("div",{style:{display:"grid",gridTemplateColumns:"1fr 2fr",gap:14}},
+              h(SC,{title:"Tỷ lệ phổ theo phương thức"},
+                h(ResponsiveContainer,{width:"100%",height:180},
+                  h(BarChart,{data:[{name:"TBM",co:dTBM.length,k:total-dTBM.length},{name:"Tổ hợp",co:dTH.length,k:total-dTH.length},{name:"ĐGNL",co:dDGNL.length,k:total-dDGNL.length}],margin:{top:20,right:0,left:-20,bottom:0}},
+                    h(XAxis,{dataKey:"name",tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),
+                    h(YAxis,{tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),
+                    h(Tooltip,TT),
+                    h(Bar,{dataKey:"co",fill:"#3b82f6",name:"Có điểm",stackId:"a"},h(LabelList,{dataKey:"co",content:BL})),
+                    h(Bar,{dataKey:"k",fill:"#2d3148",name:"Không có",stackId:"a"})
+                  )
+                )
+              ),
+              h(SC,{title:"Điểm TBM: XHB và Không XHB",sub:"So sánh điểm trung bình 2 nhóm"},
+                h("div",{style:{display:"flex",gap:12,marginTop:8}},
+                  [{g:"Có XHB",c:"#10b981"},{g:"Không XHB",c:"#ef4444"}].map(function(item,i){
+                    var group=af.filter(function(x){return x.xhb===item.g&&x.diem_tbm;});
+                    var avg=group.length?(group.reduce(function(a,x){return a+(x.diem_tbm||0);},0)/group.length).toFixed(2):0;
+                    return h("div",{key:i,style:{flex:1,background:"#1a2540",border:"1px solid "+item.c+"44",borderRadius:8,padding:"20px",textAlign:"center"}},
+                      h("div",{style:{fontSize:36,fontWeight:800,color:item.c}},avg),
+                      h("div",{style:{fontSize:12,color:"#8b92a9",marginTop:6}},item.g),
+                      h("div",{style:{fontSize:11,color:"#8b92a9"}},group.length+" thí sinh")
+                    );
+                  })
+                )
+              )
+            )
+          ),
+
+          // AI
+          currentTab==="ai"&&h("div",{style:{maxWidth:800}},
+            h("div",{style:{background:"#1a1f35",border:"1px solid #3b82f688",borderRadius:10,padding:"20px",marginBottom:14}},
+              h("div",{style:{display:"flex",alignItems:"center",gap:12,marginBottom:14}},
+                h("span",{style:{fontSize:28}},"🤖"),
+                h("div",null,h("div",{style:{fontWeight:700,color:"#e8eaf0",fontSize:15}},"AI Insight"),h("div",{style:{fontSize:11,color:"#8b92a9",marginTop:2}},total.toLocaleString()+" hồ sơ · Claude AI"))
+              ),
+              h("button",{onClick:handleAI,disabled:aiLd,style:{background:aiLd?"#2d3148":"linear-gradient(135deg,#3b82f6,#8b5cf6)",border:"none",color:"#fff",borderRadius:8,padding:"11px 0",fontSize:14,fontWeight:600,width:"100%",cursor:"pointer"}},aiLd?"⏳ Đang phân tích...":"✨ Phân tích ngay")
+            ),
+            aiTxt&&h("div",{style:{background:"#161b2e",border:"1px solid #2d3148",borderRadius:10,padding:"20px"}},
+              h("div",{style:{fontSize:12,color:"#3b82f6",fontWeight:700,marginBottom:12}},"🤖 Kết quả"),
+              h("div",{style:{fontSize:13,color:"#c8cde0",lineHeight:1.9,whiteSpace:"pre-wrap"}},aiTxt)
+            )
+          ),
+
+          // DỮ LIỆU
+          currentTab==="data"&&h("div",null,
+            h("div",{style:{display:"flex",gap:8,flexWrap:"wrap",alignItems:"flex-end",marginBottom:10}},
+              h("div",{style:{flex:1,minWidth:160}},
+                h("div",{style:{fontSize:10,color:"#8b92a9",marginBottom:3}},"🔍 Tìm kiếm"),
+                h("input",{placeholder:"Tên, SĐT...",value:srch,onChange:function(e){setSrch(e.target.value);setPg(1);},style:Object.assign({},inp,{width:"100%"})})
+              ),
+              [[tinhL,fTinh,setFTinh,"🗺️ Tỉnh/Thành"],[stL,fSt,setFSt,"📌 Tiến trình"],[tsL,fTs,setFTs,"👤 Tổ tư vấn"]].map(function(item,i){
+                return h("div",{key:i},
+                  h("div",{style:{fontSize:10,color:"#8b92a9",marginBottom:3}},item[3]),
+                  h("select",{value:item[1],onChange:function(e){item[2](e.target.value);setPg(1);},style:inp},
+                    item[0].map(function(t){return h("option",{key:t},t);})
+                  )
+                );
+              }),
+              h("span",{style:{fontSize:11,color:"#8b92a9",paddingBottom:6}},filtered.length+" kết quả")
+            ),
+            h("div",{style:{background:"#161b2e",border:"1px solid #2d3148",borderRadius:10,overflow:"hidden"}},
+              h("div",{style:{overflowX:"auto"}},
+                h("table",{style:{width:"100%",borderCollapse:"collapse"}},
+                  h("thead",null,h("tr",{style:{background:"#0e1117"}},
+                    [["name","Họ tên"],["phone","SĐT"],["province","Tỉnh"],["major","Ngành"],["status","Tiến trình"],["telesales","Tổ"],["diem_tbm","TBM"],["cccd","CCCD"],["email","Email"],["created_at","Ngày"]].map(function(col){
+                      return h("th",{key:col[0],onClick:function(){doSort(col[0]);},style:thS},col[1]+(sCol===col[0]?(sDir==="asc"?" ↑":" ↓"):""));
+                    })
+                  )),
+                  h("tbody",null,
+                    paged.length===0
+                      ?h("tr",null,h("td",{colSpan:10,style:{padding:"24px",textAlign:"center",color:"#8b92a9"}},"Không có dữ liệu"))
+                      :paged.map(function(r,i){
+                        return h("tr",{key:i,style:{borderBottom:"1px solid #1a1f35",background:i%2===0?"transparent":"#111620"}},
+                          h("td",{style:Object.assign({},tdS,{color:"#e8eaf0",fontWeight:500})},r.name||"—"),
+                          h("td",{style:tdS},r.phone||"—"),
+                          h("td",{style:tdS},r.province||"—"),
+                          h("td",{style:tdS},h("span",{style:{background:"#2d3148",borderRadius:4,padding:"2px 7px",fontSize:10}},r.major||"—")),
+                          h("td",{style:tdS},h("span",{style:{borderRadius:4,padding:"2px 6px",color:stColor(r.status),background:stColor(r.status)+"22",fontSize:10}},r.status||"—")),
+                          h("td",{style:tdS},r.telesales||"—"),
+                          h("td",{style:Object.assign({},tdS,{color:"#f59e0b",fontWeight:600})},r.diem_tbm?Number(r.diem_tbm).toFixed(2):"—"),
+                          h("td",{style:tdS},h("span",{style:{color:r.cccd?"#10b981":"#ef4444",fontWeight:700}},r.cccd?"✓":"✗")),
+                          h("td",{style:tdS},h("span",{style:{color:r.email?"#10b981":"#ef4444",fontWeight:700}},r.email?"✓":"✗")),
+                          h("td",{style:Object.assign({},tdS,{color:"#8b92a9"})},r.created_at||"—")
+                        );
+                      })
+                  )
+                )
+              )
+            ),
+            h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10}},
+              h("span",{style:{fontSize:11,color:"#8b92a9"}},"Trang "+pg+"/"+pages+" · "+filtered.length+" bản ghi"),
+              h("div",{style:{display:"flex",gap:4}},
+                h("button",{onClick:function(){setPg(function(p){return Math.max(1,p-1);});},disabled:pg===1,style:Object.assign({},inp,{cursor:"pointer",opacity:pg===1?0.4:1,padding:"4px 10px"})},"‹"),
+                Array.from({length:Math.min(pages,7)},function(_,i){return i+1;}).map(function(p){
+                  return h("button",{key:p,onClick:function(){setPg(p);},style:Object.assign({},inp,{background:p===pg?"#3b82f6":"#1e2130",border:"1px solid "+(p===pg?"#3b82f6":"#2d3148"),color:p===pg?"#fff":"#c8cde0",cursor:"pointer",minWidth:28,padding:"4px 8px"})},p);
+                }),
+                h("button",{onClick:function(){setPg(function(p){return Math.min(pages,p+1);});},disabled:pg===pages,style:Object.assign({},inp,{cursor:"pointer",opacity:pg===pages?0.4:1,padding:"4px 10px"})},"›")
+              )
+            )
+          ),
+
+          // UPLOAD
+          currentTab==="upload"&&h("div",{style:{maxWidth:560}},
+            h("div",{style:{background:"#161b2e",border:"2px dashed #3b82f655",borderRadius:12,padding:"40px 20px",textAlign:"center",cursor:"pointer"},onClick:function(){fileRef.current.click();}},
+              h("div",{style:{fontSize:40,marginBottom:12}},"📂"),
+              h("p",{style:{color:"#e8eaf0",fontWeight:700,margin:"0 0 6px",fontSize:14}},"Kéo thả hoặc click để chọn file"),
+              h("p",{style:{color:"#8b92a9",fontSize:12,margin:0}},"Hỗ trợ .xlsx · .xls · .csv · ~200k rows")
+            ),
+            uploadPct>0&&uploadPct<100&&h("div",{style:{marginTop:12}},
+              h("div",{style:{background:"#2d3148",borderRadius:4,height:8,overflow:"hidden"}},h("div",{style:{width:uploadPct+"%",height:"100%",background:"#3b82f6",borderRadius:4,transition:"width .3s"}})),
+              h("div",{style:{fontSize:11,color:"#8b92a9",marginTop:4}},uploadPct+"%")
+            ),
+            uploadMsg&&h("div",{style:{background:uploadMsg.startsWith("✅")?"#10b98122":"#ef444422",border:"1px solid "+(uploadMsg.startsWith("✅")?"#10b981":"#ef4444")+"66",borderRadius:8,padding:"10px 14px",color:uploadMsg.startsWith("✅")?"#10b981":"#ef4444",fontSize:13,marginTop:12}},uploadMsg),
+            h("div",{style:{background:"#161b2e",border:"1px solid #2d3148",borderRadius:10,padding:"14px 18px",marginTop:14}},
+              h("div",{style:{fontWeight:600,color:"#c8cde0",marginBottom:6,fontSize:12}},"Cột Excel được nhận:"),
+              ["Họ và tên","Di động","Tỉnh/ Thành phố","NGÀNH ĐKXT NV1","Tiến trình","Tổ","Nguồn_DHV cấp 1","Số CCCD/ Mã số định danh","Email","Điểm TBM","Điểm Tổ hợp môn","Điểm DGNL"].map(function(c){
+                return h("span",{key:c,style:{display:"inline-block",background:"#2d3148",borderRadius:4,padding:"2px 8px",margin:"2px",fontSize:11}},c);
+              })
+            )
+          )
+        )
       );
     }
 
-    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+    ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+  })();
   </script>
 </body>
 </html>
