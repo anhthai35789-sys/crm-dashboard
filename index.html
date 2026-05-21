@@ -168,11 +168,7 @@
       var doFetch=useCallback(async function(){
         setSt("loading");
         try{
-          var res=await fetch("https://royal-poetry-ba87.anhthai35789.workers.dev/_api/base-table/find",{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({table:"data_customer",page:1,limit:500})
-          });
+          var res=await fetch("https://royal-poetry-ba87.anhthai35789.workers.dev/_api/base-table/find",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({table:"data_customer",page:1,limit:500})});
           if(!res.ok)throw new Error("HTTP "+res.status);
           var json=await res.json();
           var rows=(json&&(json.data||json.result||json.records||json.list))||[];
@@ -426,7 +422,7 @@
             )
           )
         )
-      )
+      );
     }
 
     ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
