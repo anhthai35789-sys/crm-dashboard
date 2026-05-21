@@ -9,424 +9,704 @@
   <script src="https://cdn.jsdelivr.net/npm/prop-types@15.8.1/prop-types.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-  <style>
-    body{margin:0;background:#0e1117;color:white;font-family:'Segoe UI',sans-serif;}
-    *{box-sizing:border-box;}
-  </style>
+  <style>body{margin:0;background:#0e1117;color:white;font-family:'Segoe UI',sans-serif;}*{box-sizing:border-box;}</style>
 </head>
 <body>
-  <div id="root"></div>
-  <script>
-  (function(){
-    var {useState,useEffect,useRef,useCallback}=React;
-    var {BarChart,Bar,XAxis,YAxis,CartesianGrid,Tooltip,ResponsiveContainer,PieChart,Pie,Cell,RadarChart,Radar,PolarGrid,PolarAngleAxis,ComposedChart,LabelList,LineChart,Line}=window.Recharts;
-    var h=React.createElement;
+<div id="root"></div>
+<script>
+(function(){
+var R=React,h=R.createElement;
+var {useState,useEffect,useRef,useCallback}=R;
+var {BarChart,Bar,XAxis,YAxis,CartesianGrid,Tooltip,ResponsiveContainer,PieChart,Pie,Cell,RadarChart,Radar,PolarGrid,PolarAngleAxis,ComposedChart,LabelList,LineChart,Line}=window.Recharts;
 
-    var C1=["#3b82f6","#10b981","#8b5cf6","#f59e0b","#ef4444","#06b6d4","#ec4899","#6366f1","#84cc16","#f97316"];
-    var TOC=["#3b82f6","#10b981","#f59e0b","#ec4899","#8b5cf6"];
-    var TOL=["Tổ 1","Tổ 2","Tổ 3","Tổ 4","Tổ 5"];
-    var STL=["Mới","Tiếp cận","Quan tâm","Xét Học bạ","Fail"];
-    var HC=["#ef4444","#f59e0b","#10b981","#3b82f6","#8b5cf6","#06b6d4"];
-    var TT={contentStyle:{background:"#1e2130",border:"1px solid #2d3148",borderRadius:8,color:"#e8eaf0",fontSize:11}};
-    var POLL=30,PAGE=10;
-    var NAV=[{id:"funnel",label:"TIẾN TRÌNH",icon:"①"},{id:"kenh",label:"KÊNH TUYỂN SINH",icon:"②"},{id:"diem",label:"ĐIỂM SỐ & NGÀNH",icon:"③"},{id:"dialy",label:"ĐỊA LÝ & TRƯỜNG",icon:"④"},{id:"phanloai",label:"PHÂN TÍCH 3 LOẠI ĐIỂM",icon:"⑤"},{id:"data",label:"DỮ LIỆU",icon:"📋"},{id:"ai",label:"AI INSIGHT",icon:"🤖"},{id:"upload",label:"UPLOAD",icon:"📁"}];
+var C1=["#3b82f6","#10b981","#8b5cf6","#f59e0b","#ef4444","#06b6d4","#ec4899","#6366f1","#84cc16","#f97316"];
+var TOC=["#3b82f6","#10b981","#f59e0b","#ec4899","#8b5cf6"];
+var TOL=["Tổ 1","Tổ 2","Tổ 3","Tổ 4","Tổ 5"];
+var STL=["Mới","Tiếp cận","Quan tâm","Xét Học bạ","Fail"];
+var HC=["#ef4444","#f59e0b","#10b981","#3b82f6","#8b5cf6","#06b6d4"];
+var TT={contentStyle:{background:"#1e2130",border:"1px solid #2d3148",borderRadius:8,color:"#e8eaf0",fontSize:11}};
+var POLL=30,PAGE=10;
+var WORKER="https://royal-poetry-ba87.anhthai35789.workers.dev/_api/base-table/find";
+var NAV=[
+  {id:"funnel",label:"TIẾN TRÌNH",icon:"①"},
+  {id:"kenh",label:"KÊNH TUYỂN SINH",icon:"②"},
+  {id:"diem",label:"ĐIỂM SỐ & NGÀNH",icon:"③"},
+  {id:"dialy",label:"ĐỊA LÝ & TRƯỜNG",icon:"④"},
+  {id:"phanloai",label:"PHÂN TÍCH 3 LOẠI ĐIỂM",icon:"⑤"},
+  {id:"data",label:"DỮ LIỆU",icon:"📋"},
+  {id:"ai",label:"AI INSIGHT",icon:"🤖"},
+  {id:"upload",label:"UPLOAD",icon:"📁"}
+];
 
-    function rng(s){var x=Math.sin(s+1)*10000;return x-Math.floor(x);}
-    var MOCK=Array.from({length:200},function(_,i){
-      return{_id:"c"+i,name:"Thí sinh "+(i+1),phone:"09"+String(i).padStart(8,"0"),
-        province:["Hồ Chí Minh","Bình Dương","Đồng Nai","Tiền Giang","Long An","Bình Thuận","Tây Ninh","Bà Rịa - VT","Vĩnh Long","An Giang"][i%10],
-        major:["CNTT","Kinh tế","Quản trị","Y dược","Luật","Kế toán","Marketing","Du lịch","Khách sạn","Ngôn ngữ Anh"][i%10],
-        status:STL[Math.floor(rng(i)*5)],telesales:TOL[i%5],
-        kenh:["Nguồn Offline","Zalo Collect","Nguồn Online","Mua list giới thiệu","Ngày hội"][i%5],
-        cccd:i%7===0?"":"OK",email:i%6===0?"":"ok@gmail.com",
-        diem_tbm:Math.round((6+rng(i+100)*4)*100)/100,
-        diem_tohop:Math.round((18+rng(i+200)*12)*100)/100,
-        diem_dgnl:Math.round(600+rng(i+300)*400),
-        xhb:i%3===0?"Không XHB":"Có XHB",
-        created_at:new Date(Date.now()-i*172800000).toISOString().split("T")[0]};
-    });
+function rng(s){var x=Math.sin(s+1)*10000;return x-Math.floor(x);}
+var MOCK=Array.from({length:200},function(_,i){
+  return{_id:"c"+i,name:"Thí sinh "+(i+1),phone:"09"+String(i).padStart(8,"0"),
+    province:["Hồ Chí Minh","Bình Dương","Đồng Nai","Tiền Giang","Long An","Bình Thuận","Tây Ninh","Bà Rịa - VT","Vĩnh Long","An Giang"][i%10],
+    major:["CNTT","Kinh tế","Quản trị","Y dược","Luật","Kế toán","Marketing","Du lịch","Khách sạn","Ngôn ngữ Anh"][i%10],
+    status:STL[Math.floor(rng(i)*5)],telesales:TOL[i%5],
+    kenh:["Nguồn Offline","Zalo Collect","Nguồn Online","Mua list giới thiệu","Ngày hội"][i%5],
+    cccd:i%7===0?"":"OK",email:i%6===0?"":"ok@gmail.com",
+    diem_tbm:Math.round((6+rng(i+100)*4)*100)/100,
+    diem_tohop:Math.round((18+rng(i+200)*12)*100)/100,
+    diem_dgnl:Math.round(600+rng(i+300)*400),
+    xhb:i%3===0?"Không XHB":"Có XHB",
+    created_at:new Date(Date.now()-i*172800000).toISOString().split("T")[0]};
+});
 
-    function BL(props){
-      var x=props.x,y=props.y,w=props.width,v=props.value;
-      if(!v||w<18)return null;
-      var label=Number(v).toLocaleString();
-      if(label.length*2>w*0.95)return null;
-      return h("text",{x:x+w/2,y:y-4,fill:"#e8eaf0",textAnchor:"middle",fontSize:10,fontWeight:600},label);
-    }
-    function PL(props){
-      var cx=props.cx,cy=props.cy,ma=props.midAngle,ir=props.innerRadius,or=props.outerRadius,v=props.value,p=props.percent;
-      if(p<0.04)return null;
-      var R=Math.PI/180,r=ir+(or-ir)*0.5,x=cx+r*Math.cos(-ma*R),y=cy+r*Math.sin(-ma*R);
-      return h("text",{x,y,fill:"#fff",textAnchor:"middle",dominantBaseline:"central",fontSize:11,fontWeight:700},v);
-    }
-    function KCard({val,label,pct,color}){
-      var c=color||"#3b82f6";
-      return h("div",{style:{background:"#1a1f35",border:"1px solid "+c+"44",borderRadius:10,padding:"14px 18px",flex:1,minWidth:140}},
-        h("div",{style:{fontSize:28,fontWeight:800,color:c,lineHeight:1,marginBottom:4}},val),
-        h("div",{style:{fontSize:11,color:"#8b92a9",textTransform:"uppercase",letterSpacing:".5px",marginBottom:2}},label),
-        pct&&h("div",{style:{fontSize:11,color:"#8b92a9"}},pct)
-      );
-    }
-    function SC({title,sub,style,onExpand,children}){
-      return h("div",{style:Object.assign({background:"#161b2e",border:"1px solid #2d3148",borderRadius:10,padding:"16px 20px"},style||{})},
-        h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:sub?2:12}},
-          h("div",null,
-            title&&h("div",{style:{fontWeight:700,color:"#e8eaf0",fontSize:13}},title),
-            sub&&h("div",{style:{fontSize:11,color:"#8b92a9",marginTop:2}},sub)
-          ),
-          onExpand&&h("button",{onClick:onExpand,style:{background:"transparent",border:"1px solid #2d3148",color:"#8b92a9",borderRadius:6,width:28,height:28,cursor:"pointer",fontSize:14,flexShrink:0,marginLeft:8}},"⛶")
+var inp={background:"#1e2130",border:"1px solid #2d3148",color:"#c8cde0",borderRadius:6,padding:"6px 10px",fontSize:12};
+var thS={color:"#8b92a9",fontWeight:600,padding:"7px 10px",textAlign:"left",fontSize:10,textTransform:"uppercase",borderBottom:"1px solid #2d3148",cursor:"pointer",whiteSpace:"nowrap"};
+var tdS={padding:"6px 10px",color:"#c8cde0",verticalAlign:"middle",fontSize:11};
+
+function BL(p){
+  var x=p.x,y=p.y,w=p.width,v=p.value;
+  if(!v||w<18)return null;
+  var lbl=Number(v).toLocaleString();
+  if(lbl.length*2>w*0.95)return null;
+  return h("text",{x:x+w/2,y:y-4,fill:"#e8eaf0",textAnchor:"middle",fontSize:10,fontWeight:600},lbl);
+}
+function PL(p){
+  var cx=p.cx,cy=p.cy,ma=p.midAngle,ir=p.innerRadius,or=p.outerRadius,v=p.value,pct=p.percent;
+  if(pct<0.04)return null;
+  var Rd=Math.PI/180,r=ir+(or-ir)*0.5,x=cx+r*Math.cos(-ma*Rd),y=cy+r*Math.sin(-ma*Rd);
+  return h("text",{x:x,y:y,fill:"#fff",textAnchor:"middle",dominantBaseline:"central",fontSize:11,fontWeight:700},v);
+}
+function KCard(p){
+  var c=p.color||"#3b82f6";
+  return h("div",{style:{background:"#1a1f35",border:"1px solid "+c+"44",borderRadius:10,padding:"14px 18px",flex:1,minWidth:140}},
+    h("div",{style:{fontSize:28,fontWeight:800,color:c,lineHeight:1,marginBottom:4}},p.val),
+    h("div",{style:{fontSize:11,color:"#8b92a9",textTransform:"uppercase",letterSpacing:".5px",marginBottom:2}},p.label),
+    p.pct&&h("div",{style:{fontSize:11,color:"#8b92a9"}},p.pct)
+  );
+}
+function SC(p){
+  return h("div",{style:Object.assign({background:"#161b2e",border:"1px solid #2d3148",borderRadius:10,padding:"16px 20px"},p.style||{})},
+    h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:p.sub?2:12}},
+      h("div",null,
+        p.title&&h("div",{style:{fontWeight:700,color:"#e8eaf0",fontSize:13}},p.title),
+        p.sub&&h("div",{style:{fontSize:11,color:"#8b92a9",marginTop:2}},p.sub)
+      )
+    ),
+    p.children
+  );
+}
+function Tag(p){
+  return h("button",{onClick:p.onClick,style:{background:p.active?"#3b82f6":"#1e2130",border:"1px solid "+(p.active?"#3b82f6":"#2d3148"),color:p.active?"#fff":"#8b92a9",borderRadius:20,padding:"5px 14px",fontSize:12,fontWeight:p.active?600:400,display:"flex",alignItems:"center",gap:6,whiteSpace:"nowrap",cursor:"pointer"}},p.children);
+}
+function Modal(p){
+  if(!p.modal)return null;
+  return h("div",{onClick:p.onClose,style:{position:"fixed",inset:0,background:"rgba(0,0,0,.8)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:24}},
+    h("div",{onClick:function(e){e.stopPropagation();},style:{background:"#161b2e",border:"1px solid #2d3148",borderRadius:14,padding:"20px 24px",width:"100%",maxWidth:1000,maxHeight:"90vh",overflow:"auto"}},
+      h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}},
+        h("div",null,
+          h("div",{style:{fontWeight:700,color:"#e8eaf0",fontSize:16}},p.modal.title),
+          p.modal.sub&&h("div",{style:{fontSize:12,color:"#8b92a9",marginTop:2}},p.modal.sub)
         ),
-        children
-      );
-    }
-    function Tag({onClick,active,children}){
-      return h("button",{onClick,style:{background:active?"#3b82f6":"#1e2130",border:"1px solid "+(active?"#3b82f6":"#2d3148"),color:active?"#fff":"#8b92a9",borderRadius:20,padding:"5px 14px",fontSize:12,fontWeight:active?600:400,display:"flex",alignItems:"center",gap:6,whiteSpace:"nowrap",cursor:"pointer"}},children);
-    }
-    function Modal({modal,onClose}){
-      if(!modal)return null;
-      return h("div",{onClick:onClose,style:{position:"fixed",inset:0,background:"rgba(0,0,0,.8)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:24}},
-        h("div",{onClick:function(e){e.stopPropagation();},style:{background:"#161b2e",border:"1px solid #2d3148",borderRadius:14,padding:"20px 24px",width:"100%",maxWidth:1000,maxHeight:"90vh",overflow:"auto"}},
-          h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}},
-            h("div",null,
-              h("div",{style:{fontWeight:700,color:"#e8eaf0",fontSize:16}},modal.title),
-              modal.sub&&h("div",{style:{fontSize:12,color:"#8b92a9",marginTop:2}},modal.sub)
+        h("button",{onClick:p.onClose,style:{background:"#2d3148",border:"none",color:"#c8cde0",borderRadius:6,width:32,height:32,cursor:"pointer",fontSize:18}},"×")
+      ),
+      p.modal.content
+    )
+  );
+}
+
+function App(){
+  var t1=useState("funnel"); var currentTab=t1[0],setCurrentTab=t1[1];
+  var t2=useState([]); var data=t2[0],setData=t2[1];
+  var t3=useState("idle"); var st=t3[0],setSt=t3[1];
+  var t4=useState(true); var mock=t4[0],setMock=t4[1];
+  var t5=useState(POLL); var cd=t5[0],setCd=t5[1];
+  var t6=useState("Tất cả"); var filterTo=t6[0],setFilterTo=t6[1];
+  var t7=useState("Tất cả"); var fSt=t7[0],setFSt=t7[1];
+  var t8=useState("Tất cả"); var fTs=t8[0],setFTs=t8[1];
+  var t9=useState("Tất cả"); var fTinh=t9[0],setFTinh=t9[1];
+  var t10=useState(""); var srch=t10[0],setSrch=t10[1];
+  var t11=useState("created_at"); var sCol=t11[0],setSCol=t11[1];
+  var t12=useState("desc"); var sDir=t12[0],setSDir=t12[1];
+  var t13=useState(1); var pg=t13[0],setPg=t13[1];
+  var t14=useState(""); var aiTxt=t14[0],setAiTxt=t14[1];
+  var t15=useState(false); var aiLd=t15[0],setAiLd=t15[1];
+  var t16=useState(""); var uploadMsg=t16[0],setUploadMsg=t16[1];
+  var t17=useState(0); var uploadPct=t17[0],setUploadPct=t17[1];
+  var t18=useState(null); var modal=t18[0],setModal=t18[1];
+  var timerRef=useRef(null),cdRef=useRef(null),fileRef=useRef(null);
+
+  var active=mock?MOCK:data;
+  var af=active.filter(function(x){
+    return(filterTo==="Tất cả"||x.telesales===filterTo)&&(fTinh==="Tất cả"||x.province===fTinh);
+  });
+  var total=af.length;
+  var byStatus=STL.map(function(s){return{name:s,v:af.filter(function(x){return x.status===s;}).length};});
+  var xhb=af.filter(function(x){return x.status==="Xét Học bạ";}).length;
+  var tiepcan=af.filter(function(x){return x.status==="Tiếp cận";}).length;
+  var fail=af.filter(function(x){return x.status==="Fail";}).length;
+  var byTo=TOL.map(function(t){
+    var rows=af.filter(function(x){return x.telesales===t;});
+    var obj={name:t,total:rows.length,xhb:rows.filter(function(x){return x.status==="Xét Học bạ";}).length};
+    STL.forEach(function(s){obj[s]=rows.filter(function(x){return x.status===s;}).length;});
+    return obj;
+  });
+  var byTinhMap={};
+  af.forEach(function(x){if(x.province)byTinhMap[x.province]=(byTinhMap[x.province]||0)+1;});
+  var byTinh=Object.keys(byTinhMap).map(function(k){return{name:k,value:byTinhMap[k]};}).sort(function(a,b){return b.value-a.value;});
+  var byTinhStack=byTinh.slice(0,10).map(function(t){
+    var obj={name:t.name};
+    STL.forEach(function(s){obj[s]=af.filter(function(x){return x.province===t.name&&x.status===s;}).length;});
+    return obj;
+  });
+  var byKenhMap={};
+  af.forEach(function(x){if(x.kenh)byKenhMap[x.kenh]=(byKenhMap[x.kenh]||0)+1;});
+  var byKenh=Object.keys(byKenhMap).map(function(k){return{name:k,total:byKenhMap[k],xhb:af.filter(function(x){return x.kenh===k&&x.status==="Xét Học bạ";}).length};});
+  var majorMap={};
+  af.forEach(function(x){if(x.major){if(!majorMap[x.major])majorMap[x.major]={sum:0,cnt:0};majorMap[x.major].sum+=(x.diem_tbm||0);majorMap[x.major].cnt++;}});
+  var byMajor=Object.keys(majorMap).map(function(k){return{name:k,avg:majorMap[k].cnt?majorMap[k].sum/majorMap[k].cnt:0};}).sort(function(a,b){return b.avg-a.avg;}).slice(0,10);
+  var dTBM=af.filter(function(x){return x.diem_tbm;}).map(function(x){return x.diem_tbm;});
+  var dTH=af.filter(function(x){return x.diem_tohop;}).map(function(x){return x.diem_tohop;});
+  var dDGNL=af.filter(function(x){return x.diem_dgnl;}).map(function(x){return x.diem_dgnl;});
+  var avgTBM=dTBM.length?(dTBM.reduce(function(a,b){return a+b;},0)/dTBM.length).toFixed(2):0;
+  var avgTH=dTH.length?(dTH.reduce(function(a,b){return a+b;},0)/dTH.length).toFixed(2):0;
+  var avgDGNL=dDGNL.length?Math.round(dDGNL.reduce(function(a,b){return a+b;},0)/dDGNL.length):0;
+  var noCCCD=af.filter(function(x){return!x.cccd;}).length;
+  var noEmail=af.filter(function(x){return!x.email;}).length;
+  var tbmH=[{r:"6.0-6.5",v:dTBM.filter(function(x){return x>=6&&x<6.5;}).length},{r:"6.5-7.0",v:dTBM.filter(function(x){return x>=6.5&&x<7;}).length},{r:"7.0-7.5",v:dTBM.filter(function(x){return x>=7&&x<7.5;}).length},{r:"7.5-8.0",v:dTBM.filter(function(x){return x>=7.5&&x<8;}).length},{r:"8.0-8.5",v:dTBM.filter(function(x){return x>=8&&x<8.5;}).length},{r:"8.5+",v:dTBM.filter(function(x){return x>=8.5;}).length}];
+  var thH=[{r:"18-20",v:dTH.filter(function(x){return x>=18&&x<20;}).length},{r:"20-22",v:dTH.filter(function(x){return x>=20&&x<22;}).length},{r:"22-24",v:dTH.filter(function(x){return x>=22&&x<24;}).length},{r:"24-26",v:dTH.filter(function(x){return x>=24&&x<26;}).length},{r:"26-28",v:dTH.filter(function(x){return x>=26&&x<28;}).length},{r:"28+",v:dTH.filter(function(x){return x>=28;}).length}];
+  var radarData=byMajor.slice(0,6).map(function(m){return{subject:m.name,TBM:m.avg};});
+  var xhbLine=(function(){
+    var xd=af.filter(function(x){return x.status==="Xét Học bạ";});
+    var allD=xd.map(function(x){return x.created_at;}).filter(Boolean);
+    var uD=allD.filter(function(v,i,a){return a.indexOf(v)===i;}).sort().slice(-14);
+    return uD.map(function(d){
+      var row={ngay:d.slice(5)};
+      TOL.forEach(function(t){row[t]=xd.filter(function(x){return x.created_at===d&&x.telesales===t;}).length;});
+      return row;
+    });
+  })();
+  var gpData=TOL.map(function(t){
+    var obj={name:t};
+    STL.forEach(function(s){obj[s]=af.filter(function(x){return x.telesales===t&&x.status===s;}).length;});
+    return obj;
+  });
+  var tinhAllMap={};
+  active.forEach(function(x){if(x.province)tinhAllMap[x.province]=(tinhAllMap[x.province]||0)+1;});
+  var tinhL=["Tất cả"].concat(Object.keys(tinhAllMap).sort());
+  var stL=["Tất cả"].concat(STL);
+  var tsL=["Tất cả"].concat(TOL);
+  var filtered=af.filter(function(d){
+    var q=srch.toLowerCase();
+    return(!q||String(d.name||"").toLowerCase().includes(q)||String(d.phone||"").includes(q))
+      &&(fTinh==="Tất cả"||d.province===fTinh)
+      &&(fTs==="Tất cả"||d.telesales===fTs)
+      &&(fSt==="Tất cả"||d.status===fSt);
+  }).sort(function(a,b){
+    return sDir==="asc"?String(a[sCol]||"").localeCompare(String(b[sCol]||"")):String(b[sCol]||"").localeCompare(String(a[sCol]||""));
+  });
+  var pages=Math.max(1,Math.ceil(filtered.length/PAGE));
+  var paged=filtered.slice((pg-1)*PAGE,pg*PAGE);
+
+  var doFetch=useCallback(async function(){
+    setSt("loading");
+    try{
+      var res=await fetch(WORKER,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({table:"data_customer",page:1,limit:500})});
+      if(!res.ok)throw new Error("HTTP "+res.status);
+      var json=await res.json();
+      var rows=(json&&(json.data||json.result||json.records||json.list))||[];
+      setData(Array.isArray(rows)?rows:[]);
+      setSt(Array.isArray(rows)&&rows.length>0?"ok":"empty");
+      setCd(POLL);
+    }catch(e){setSt("cors");}
+  },[]);
+
+  useEffect(function(){
+    if(!mock){doFetch();timerRef.current=setInterval(doFetch,POLL*1000);}
+    else{setSt("ok");clearInterval(timerRef.current);}
+    return function(){clearInterval(timerRef.current);};
+  },[mock,doFetch]);
+
+  useEffect(function(){
+    clearInterval(cdRef.current);
+    if(!mock&&st==="ok")cdRef.current=setInterval(function(){setCd(function(c){return c<=1?POLL:c-1;});},1000);
+    return function(){clearInterval(cdRef.current);};
+  },[st,mock]);
+
+  function doSort(c){if(sCol===c)setSDir(function(d){return d==="asc"?"desc":"asc";});else{setSCol(c);setSDir("asc");}}
+  function stColor(s){return s==="Xét Học bạ"?"#10b981":s==="Tiếp cận"?"#f59e0b":s==="Quan tâm"?"#8b5cf6":s==="Fail"?"#ef4444":"#3b82f6";}
+  function exp(t,s,c){setModal({title:t,sub:s,content:c});}
+
+  function showTinhDetail(name){
+    var rows=af.filter(function(x){return x.province===name;});
+    exp("Chi tiết: "+name,rows.length.toLocaleString()+" hồ sơ",
+      h("div",null,
+        h("div",{style:{display:"flex",gap:12,marginBottom:20,flexWrap:"wrap"}},
+          STL.map(function(s,i){
+            var cnt=rows.filter(function(x){return x.status===s;}).length;
+            var pct=rows.length?((cnt/rows.length)*100).toFixed(1):0;
+            return h(KCard,{key:s,val:cnt.toLocaleString(),label:s,pct:pct+"% tổng tỉnh",color:C1[i]});
+          })
+        ),
+        STL.map(function(s,i){
+          var cnt=rows.filter(function(x){return x.status===s;}).length;
+          var pct=rows.length?((cnt/rows.length)*100).toFixed(1):0;
+          return h("div",{key:i,style:{display:"flex",alignItems:"center",gap:10,marginBottom:12}},
+            h("span",{style:{width:100,fontSize:13,color:"#8b92a9",textAlign:"right",flexShrink:0}},s),
+            h("div",{style:{flex:1,background:"#2d3148",borderRadius:4,height:32,overflow:"hidden",position:"relative"}},
+              h("div",{style:{width:pct+"%",height:"100%",background:C1[i],borderRadius:4}}),
+              h("span",{style:{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",color:"#fff",fontSize:13,fontWeight:700}},cnt.toLocaleString())
             ),
-            h("button",{onClick:onClose,style:{background:"#2d3148",border:"none",color:"#c8cde0",borderRadius:6,width:32,height:32,cursor:"pointer",fontSize:18}},"×")
-          ),
-          modal.content
+            h("span",{style:{fontSize:12,fontWeight:600,color:C1[i],minWidth:50,textAlign:"right"}},pct+"%")
+          );
+        })
+      )
+    );
+  }
+
+  async function handleAI(){
+    setAiLd(true);setAiTxt("");
+    try{
+      var r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:"Chuyên gia tuyển sinh. Phân tích: 1)Tổng quan, 2)Cảnh báo, 3)Đề xuất. Tiếng Việt, emoji.",messages:[{role:"user",content:"Tổng:"+total+",XHB:"+xhb+",Fail:"+fail+",TBM:"+avgTBM+",CCCD:"+noCCCD+",Email:"+noEmail}]})});
+      var d=await r.json();
+      setAiTxt(d.content&&d.content[0]&&d.content[0].text||"Không có phản hồi.");
+    }catch(e){setAiTxt("Lỗi AI.");}
+    setAiLd(false);
+  }
+
+  async function handleFile(e){
+    var file=e.target.files[0];if(!file)return;
+    setUploadMsg("⏳ Đang đọc: "+file.name);setUploadPct(20);
+    try{
+      var buf=await file.arrayBuffer();setUploadPct(50);
+      var wb=XLSX.read(buf,{type:"array"});
+      var ws=wb.Sheets[wb.SheetNames[0]];setUploadPct(70);
+      var rows=XLSX.utils.sheet_to_json(ws,{defval:""});setUploadPct(90);
+      var mapped=rows.map(function(r,i){
+        return{_id:"r"+i,
+          name:r["Họ và tên"]||r["Họ tên"]||r["name"]||"",
+          phone:String(r["Di động"]||r["Số điện thoại"]||r["phone"]||""),
+          province:r["Tỉnh/ Thành phố"]||r["Tỉnh/Thành"]||r["tinh"]||"",
+          major:r["NGÀNH ĐKXT NV1"]||r["Ngành NV1"]||r["major"]||"",
+          status:r["Tiến trình"]||r["Trạng thái"]||r["status"]||"",
+          telesales:r["Tổ"]||r["Telesales"]||r["Tổ tư vấn"]||"",
+          kenh:r["Nguồn_DHV cấp 1"]||r["Kênh"]||r["Nguồn"]||"",
+          cccd:r["Số CCCD/ Mã số định danh"]||r["CCCD"]||"",
+          email:r["Email"]||r["email"]||"",
+          diem_tbm:parseFloat(r["Điểm TBM"]||0)||0,
+          diem_tohop:parseFloat(r["Điểm Tổ hợp môn"]||0)||0,
+          diem_dgnl:parseFloat(r["Điểm DGNL"]||0)||0,
+          xhb:(r["Tiến trình"]||"").toLowerCase().includes("xét học bạ")?"Có XHB":"Không XHB",
+          created_at:r["Ngày"]||r["created_at"]||new Date().toISOString().split("T")[0]
+        };
+      });
+      setUploadPct(100);setData(mapped);setMock(false);setSt("ok");
+      setUploadMsg("✅ "+file.name+" — "+mapped.length.toLocaleString()+" bản ghi");
+      setCurrentTab("funnel");
+    }catch(err){setUploadMsg("❌ Lỗi: "+err.message);setUploadPct(0);}
+  }
+
+  return h("div",{style:{minHeight:"100vh",background:"#0e1117",fontFamily:"'Segoe UI',sans-serif",color:"#c8cde0",fontSize:13}},
+    h(Modal,{modal:modal,onClose:function(){setModal(null);}}),
+    // HEADER
+    h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"18px 24px 0",flexWrap:"wrap",gap:12}},
+      h("div",null,
+        h("h1",{style:{fontSize:22,fontWeight:800,color:"#fff",lineHeight:1.2,margin:0}},
+          "Phân tích ",h("span",{style:{color:"#3b82f6"}},"Chuyên sâu"),h("br",null),"Dữ liệu Thí sinh 2026"
+        ),
+        h("div",{style:{fontSize:11,color:"#8b92a9",marginTop:6}},
+          "ĐH Hùng Vương TP.HCM · ",(mock?"Demo":"Live"),
+          st==="ok"&&!mock&&h("span",{style:{color:"#10b981",marginLeft:8}},"● Live · "+cd+"s"),
+          mock&&h("span",{style:{color:"#8b5cf6",marginLeft:8}},"● Demo mode")
         )
-      );
-    }
+      ),
+      h("div",{style:{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}},
+        h("div",{style:{display:"flex",flexDirection:"column",gap:2}},
+          h("div",{style:{fontSize:10,color:"#8b92a9"}},"🗺️ Tỉnh/Thành"),
+          h("div",{style:{display:"flex",gap:4}},
+            h("button",{title:"Reset",onClick:function(){setFilterTo("Tất cả");setFTinh("Tất cả");},style:{background:"#2d3148",border:"1px solid #3b82f6",color:"#3b82f6",borderRadius:6,width:32,cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}},"↺"),
+            h("select",{value:fTinh,onChange:function(e){setFTinh(e.target.value);},style:Object.assign({},inp,{cursor:"pointer"})},
+              tinhL.map(function(t){return h("option",{key:t},t);})
+            )
+          )
+        ),
+        h("div",{style:{display:"flex",flexDirection:"column",gap:2}},
+          h("div",{style:{fontSize:10,color:"#8b92a9"}},"👤 Tổ tư vấn"),
+          h("select",{value:filterTo,onChange:function(e){setFilterTo(e.target.value);},style:Object.assign({},inp,{cursor:"pointer"})},
+            ["Tất cả"].concat(TOL).map(function(t){return h("option",{key:t},t);})
+          )
+        ),
+        mock
+          ?h("button",{onClick:function(){setMock(false);doFetch();},style:{background:"#3b82f633",border:"1px solid #3b82f6",color:"#3b82f6",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:600,cursor:"pointer"}},"← API thật")
+          :h("button",{onClick:function(){setMock(true);},style:{background:"#8b5cf633",border:"1px solid #8b5cf6",color:"#8b5cf6",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:600,cursor:"pointer"}},"Demo"),
+        h("input",{ref:fileRef,type:"file",accept:".xlsx,.xls,.csv",style:{display:"none"},onChange:handleFile}),
+        h("button",{onClick:function(){fileRef.current.click();},style:{background:"#3b82f6",border:"none",color:"#fff",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:600,cursor:"pointer"}},"+Upload")
+      )
+    ),
+    // NAV TABS
+    h("div",{style:{display:"flex",gap:8,padding:"14px 24px",overflowX:"auto",borderBottom:"1px solid #2d3148"}},
+      NAV.map(function(t){return h(Tag,{key:t.id,active:currentTab===t.id,onClick:function(){setCurrentTab(t.id);}},t.icon+" "+t.label);})
+    ),
+    // CONTENT
+    h("div",{style:{padding:"16px 24px"}},
 
-    var inp={background:"#1e2130",border:"1px solid #2d3148",color:"#c8cde0",borderRadius:6,padding:"6px 10px",fontSize:12};
-    var thS={color:"#8b92a9",fontWeight:600,padding:"7px 10px",textAlign:"left",fontSize:10,textTransform:"uppercase",borderBottom:"1px solid #2d3148",cursor:"pointer",whiteSpace:"nowrap"};
-    var tdS={padding:"6px 10px",color:"#c8cde0",verticalAlign:"middle",fontSize:11};
-
-    function App(){
-      var [currentTab,setCurrentTab]=useState("funnel");
-      var [data,setData]=useState([]);
-      var [st,setSt]=useState("idle");
-      var [mock,setMock]=useState(true);
-      var [cd,setCd]=useState(POLL);
-      var [filterTo,setFilterTo]=useState("Tất cả");
-      var [fSt,setFSt]=useState("Tất cả");
-      var [fTs,setFTs]=useState("Tất cả");
-      var [fTinh,setFTinh]=useState("Tất cả");
-      var [srch,setSrch]=useState("");
-      var [sCol,setSCol]=useState("created_at");
-      var [sDir,setSDir]=useState("desc");
-      var [pg,setPg]=useState(1);
-      var [aiTxt,setAiTxt]=useState("");
-      var [aiLd,setAiLd]=useState(false);
-      var [uploadMsg,setUploadMsg]=useState("");
-      var [uploadPct,setUploadPct]=useState(0);
-      var [modal,setModal]=useState(null);
-      var timerRef=useRef(null),cdRef=useRef(null),fileRef=useRef(null);
-
-      var active=mock?MOCK:data;
-      var af=active.filter(function(x){
-        return(filterTo==="Tất cả"||x.telesales===filterTo)&&(fTinh==="Tất cả"||x.province===fTinh);
-      });
-      var total=af.length;
-      var byStatus=STL.map(function(s){return{name:s,v:af.filter(function(x){return x.status===s;}).length};});
-      var xhb=af.filter(function(x){return x.status==="Xét Học bạ";}).length;
-      var tiepcan=af.filter(function(x){return x.status==="Tiếp cận";}).length;
-      var fail=af.filter(function(x){return x.status==="Fail";}).length;
-      var byTo=TOL.map(function(t){var rows=af.filter(function(x){return x.telesales===t;});var obj={name:t,total:rows.length,xhb:rows.filter(function(x){return x.status==="Xét Học bạ";}).length};STL.forEach(function(s){obj[s]=rows.filter(function(x){return x.status===s;}).length;});return obj;});
-      var byTinhMap={};af.forEach(function(x){if(x.province)byTinhMap[x.province]=(byTinhMap[x.province]||0)+1;});
-      var byTinh=Object.keys(byTinhMap).map(function(k){return{name:k,value:byTinhMap[k]};}).sort(function(a,b){return b.value-a.value;});
-      var byTinhStack=byTinh.slice(0,10).map(function(t){
-        var obj={name:t.name};
-        STL.forEach(function(s){obj[s]=af.filter(function(x){return x.province===t.name&&x.status===s;}).length;});
-        return obj;
-      });
-      var byKenhMap={};af.forEach(function(x){if(x.kenh)byKenhMap[x.kenh]=(byKenhMap[x.kenh]||0)+1;});
-      var byKenh=Object.keys(byKenhMap).map(function(k){return{name:k,total:byKenhMap[k],xhb:af.filter(function(x){return x.kenh===k&&x.status==="Xét Học bạ";}).length};});
-      var majorMap={};af.forEach(function(x){if(x.major){if(!majorMap[x.major])majorMap[x.major]={sum:0,cnt:0};majorMap[x.major].sum+=(x.diem_tbm||0);majorMap[x.major].cnt++;}});
-      var byMajor=Object.keys(majorMap).map(function(k){return{name:k,avg:majorMap[k].cnt?majorMap[k].sum/majorMap[k].cnt:0};}).sort(function(a,b){return b.avg-a.avg;}).slice(0,10);
-      var dTBM=af.filter(function(x){return x.diem_tbm;}).map(function(x){return x.diem_tbm;});
-      var dTH=af.filter(function(x){return x.diem_tohop;}).map(function(x){return x.diem_tohop;});
-      var dDGNL=af.filter(function(x){return x.diem_dgnl;}).map(function(x){return x.diem_dgnl;});
-      var avgTBM=dTBM.length?(dTBM.reduce(function(a,b){return a+b;},0)/dTBM.length).toFixed(2):0;
-      var avgTH=dTH.length?(dTH.reduce(function(a,b){return a+b;},0)/dTH.length).toFixed(2):0;
-      var avgDGNL=dDGNL.length?Math.round(dDGNL.reduce(function(a,b){return a+b;},0)/dDGNL.length):0;
-      var noCCCD=af.filter(function(x){return!x.cccd;}).length;
-      var noEmail=af.filter(function(x){return!x.email;}).length;
-      var tbmH=[{r:"6.0-6.5",v:dTBM.filter(function(x){return x>=6&&x<6.5;}).length},{r:"6.5-7.0",v:dTBM.filter(function(x){return x>=6.5&&x<7;}).length},{r:"7.0-7.5",v:dTBM.filter(function(x){return x>=7&&x<7.5;}).length},{r:"7.5-8.0",v:dTBM.filter(function(x){return x>=7.5&&x<8;}).length},{r:"8.0-8.5",v:dTBM.filter(function(x){return x>=8&&x<8.5;}).length},{r:"8.5+",v:dTBM.filter(function(x){return x>=8.5;}).length}];
-      var thH=[{r:"18-20",v:dTH.filter(function(x){return x>=18&&x<20;}).length},{r:"20-22",v:dTH.filter(function(x){return x>=20&&x<22;}).length},{r:"22-24",v:dTH.filter(function(x){return x>=22&&x<24;}).length},{r:"24-26",v:dTH.filter(function(x){return x>=24&&x<26;}).length},{r:"26-28",v:dTH.filter(function(x){return x>=26&&x<28;}).length},{r:"28+",v:dTH.filter(function(x){return x>=28;}).length}];
-      var radarData=byMajor.slice(0,6).map(function(m){return{subject:m.name,TBM:m.avg};});
-      var xhbLine=(function(){var xd=af.filter(function(x){return x.status==="Xét Học bạ";});var allD=xd.map(function(x){return x.created_at;}).filter(Boolean);var uD=allD.filter(function(v,i,a){return a.indexOf(v)===i;}).sort().slice(-14);return uD.map(function(d){var row={ngay:d.slice(5)};TOL.forEach(function(t){row[t]=xd.filter(function(x){return x.created_at===d&&x.telesales===t;}).length;});return row;});})();
-      var gpData=TOL.map(function(t){var obj={name:t};STL.forEach(function(s){obj[s]=af.filter(function(x){return x.telesales===t&&x.status===s;}).length;});return obj;});
-      var tinhAllMap={};active.forEach(function(x){if(x.province)tinhAllMap[x.province]=(tinhAllMap[x.province]||0)+1;});
-      var tinhL=["Tất cả"].concat(Object.keys(tinhAllMap).sort());
-      var stL=["Tất cả"].concat(STL);
-      var tsL=["Tất cả"].concat(TOL);
-      var filtered=af.filter(function(d){var q=srch.toLowerCase();return(!q||String(d.name||"").toLowerCase().includes(q)||String(d.phone||"").includes(q))&&(fTinh==="Tất cả"||d.province===fTinh)&&(fTs==="Tất cả"||d.telesales===fTs)&&(fSt==="Tất cả"||d.status===fSt);}).sort(function(a,b){return sDir==="asc"?String(a[sCol]||"").localeCompare(String(b[sCol]||"")):String(b[sCol]||"").localeCompare(String(a[sCol]||""));});
-      var pages=Math.max(1,Math.ceil(filtered.length/PAGE));
-      var paged=filtered.slice((pg-1)*PAGE,pg*PAGE);
-
-      var doFetch=useCallback(async function(){
-        setSt("loading");
-        try{
-          var res=await fetch("https://royal-poetry-ba87.anhthai35789.workers.dev/_api/base-table/find",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({table:"data_customer",page:1,limit:500})});
-          if(!res.ok)throw new Error("HTTP "+res.status);
-          var json=await res.json();
-          var rows=(json&&(json.data||json.result||json.records||json.list))||[];
-          setData(Array.isArray(rows)?rows:[]);setSt(Array.isArray(rows)&&rows.length>0?"ok":"empty");setCd(POLL);
-        }catch(e){setSt("cors");}
-      },[]);
-
-      useEffect(function(){if(!mock){doFetch();timerRef.current=setInterval(doFetch,POLL*1000);}else{setSt("ok");clearInterval(timerRef.current);}return function(){clearInterval(timerRef.current);};},[mock,doFetch]);
-      useEffect(function(){clearInterval(cdRef.current);if(!mock&&st==="ok")cdRef.current=setInterval(function(){setCd(function(c){return c<=1?POLL:c-1;});},1000);return function(){clearInterval(cdRef.current);};},[st,mock]);
-
-      function doSort(c){if(sCol===c)setSDir(function(d){return d==="asc"?"desc":"asc";});else{setSCol(c);setSDir("asc");}}
-      function stColor(s){return s==="Xét Học bạ"?"#10b981":s==="Tiếp cận"?"#f59e0b":s==="Quan tâm"?"#8b5cf6":s==="Fail"?"#ef4444":"#3b82f6";}
-      function exp(t,s,c){setModal({title:t,sub:s,content:c});}
-
-      function showTinhDetail(tinhName){
-        var rows=af.filter(function(x){return x.province===tinhName;});
-        exp("Chi tiết: "+tinhName,rows.length.toLocaleString()+" hồ sơ",
-          h("div",null,
-            h("div",{style:{display:"flex",gap:12,marginBottom:20,flexWrap:"wrap"}},
-              STL.map(function(s,i){
-                var cnt=rows.filter(function(x){return x.status===s;}).length;
-                var pct=rows.length?((cnt/rows.length)*100).toFixed(1):0;
-                return h(KCard,{key:s,val:cnt.toLocaleString(),label:s,pct:pct+"% tổng tỉnh",color:C1[i]});
-              })
-            ),
-            STL.map(function(s,i){
-              var cnt=rows.filter(function(x){return x.status===s;}).length;
-              var pct=rows.length?((cnt/rows.length)*100).toFixed(1):0;
-              return h("div",{key:i,style:{display:"flex",alignItems:"center",gap:10,marginBottom:12}},
-                h("span",{style:{width:100,fontSize:13,color:"#8b92a9",textAlign:"right",flexShrink:0}},s),
-                h("div",{style:{flex:1,background:"#2d3148",borderRadius:4,height:32,overflow:"hidden",position:"relative"}},
+      // TIẾN TRÌNH
+      currentTab==="funnel"&&h("div",null,
+        h("div",{style:{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}},
+          h(KCard,{val:total.toLocaleString(),label:"TỔNG HỒ SƠ",color:"#3b82f6"}),
+          h(KCard,{val:xhb.toLocaleString(),label:"XÉT HỌC BẠ",pct:(total?((xhb/total)*100).toFixed(1):0)+"% tổng",color:"#10b981"}),
+          h(KCard,{val:tiepcan.toLocaleString(),label:"ĐANG TIẾP CẬN",pct:(total?((tiepcan/total)*100).toFixed(1):0)+"% tổng",color:"#f59e0b"}),
+          h(KCard,{val:fail.toLocaleString(),label:"FAIL",pct:(total?((fail/total)*100).toFixed(1):0)+"% tổng",color:"#ef4444"})
+        ),
+        h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}},
+          h(SC,{title:"Phễu Chuyển đổi",sub:"Số lượng thí sinh tại từng giai đoạn"},
+            byStatus.map(function(s,i){
+              var pct=total?((s.v/total)*100).toFixed(1):0;
+              return h("div",{key:i,style:{display:"flex",alignItems:"center",gap:10,marginBottom:10}},
+                h("span",{style:{width:80,fontSize:12,color:"#8b92a9",textAlign:"right",flexShrink:0}},s.name),
+                h("div",{style:{flex:1,background:"#2d3148",borderRadius:4,height:28,overflow:"hidden",position:"relative"}},
                   h("div",{style:{width:pct+"%",height:"100%",background:C1[i],borderRadius:4}}),
-                  h("span",{style:{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",color:"#fff",fontSize:13,fontWeight:700}},cnt.toLocaleString())
+                  h("span",{style:{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",color:"#fff",fontSize:12,fontWeight:700}},s.v.toLocaleString())
                 ),
-                h("span",{style:{fontSize:12,fontWeight:600,color:C1[i],minWidth:50,textAlign:"right"}},pct+"%")
+                h("span",{style:{fontSize:12,fontWeight:600,color:C1[i],minWidth:40,textAlign:"right"}},s.v),
+                h("span",{style:{fontSize:11,color:"#8b92a9",minWidth:42,textAlign:"right"}},pct+"%")
+              );
+            })
+          ),
+          h(SC,{title:"XHB theo Tổ tư vấn",sub:"Số hồ sơ Xét Học bạ của từng Tổ"},
+            h(ResponsiveContainer,{width:"100%",height:240},
+              h(BarChart,{data:byTo,margin:{top:20,right:20,left:-20,bottom:0}},
+                h(CartesianGrid,{strokeDasharray:"3 3",stroke:"#2d3148"}),
+                h(XAxis,{dataKey:"name",tick:{fill:"#8b92a9",fontSize:11},axisLine:false,tickLine:false}),
+                h(YAxis,{tick:{fill:"#8b92a9",fontSize:11},axisLine:false,tickLine:false}),
+                h(Tooltip,TT),
+                h(Bar,{dataKey:"xhb",fill:"#10b981",radius:[4,4,0,0],name:"XHB"},h(LabelList,{dataKey:"xhb",content:BL}))
+              )
+            )
+          )
+        ),
+        h(SC,{title:"Tiến trình theo Tổ tư vấn",sub:"So sánh từng giai đoạn giữa các Tổ",style:{marginBottom:14}},
+          h(ResponsiveContainer,{width:"100%",height:260},
+            h(BarChart,{data:gpData,margin:{top:20,right:10,left:0,bottom:0},barCategoryGap:"10%",barGap:1},
+              h(CartesianGrid,{strokeDasharray:"3 3",stroke:"#2d3148"}),
+              h(XAxis,{dataKey:"name",tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),
+              h(YAxis,{tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),
+              h(Tooltip,TT),
+              STL.map(function(s,i){return h(Bar,{key:s,dataKey:s,fill:C1[i],radius:[3,3,0,0],name:s},h(LabelList,{dataKey:s,content:BL}));})
+            )
+          ),
+          h("div",{style:{display:"flex",flexWrap:"wrap",gap:"4px 14px",justifyContent:"center",marginTop:8}},
+            STL.map(function(s,i){return h("span",{key:s,style:{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#8b92a9"}},h("span",{style:{width:8,height:8,borderRadius:2,background:C1[i],display:"inline-block"}}),s);})
+          )
+        ),
+        h(SC,{title:"XHB theo ngày của từng Tổ",sub:"14 ngày gần nhất"},
+          h(ResponsiveContainer,{width:"100%",height:240},
+            h(LineChart,{data:xhbLine,margin:{top:10,right:20,left:-20,bottom:0}},
+              h(CartesianGrid,{strokeDasharray:"3 3",stroke:"#2d3148"}),
+              h(XAxis,{dataKey:"ngay",tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),
+              h(YAxis,{tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),
+              h(Tooltip,TT),
+              TOL.map(function(t,i){return h(Line,{key:t,type:"monotone",dataKey:t,stroke:TOC[i],strokeWidth:2,dot:{fill:TOC[i],r:3},name:t});})
+            )
+          ),
+          h("div",{style:{display:"flex",flexWrap:"wrap",gap:"4px 14px",justifyContent:"center",marginTop:8}},
+            TOL.map(function(t,i){return h("span",{key:t,style:{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#8b92a9"}},h("span",{style:{width:16,height:3,background:TOC[i],display:"inline-block",borderRadius:2}}),t);})
+          )
+        )
+      ),
+
+      // KÊNH
+      currentTab==="kenh"&&h("div",null,
+        h("div",{style:{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}},
+          h(KCard,{val:(total?((af.filter(function(x){return x.cccd;}).length/total)*100).toFixed(1):0)+"%",label:"CÓ CCCD",color:"#3b82f6"}),
+          h(KCard,{val:(total?((noCCCD/total)*100).toFixed(1):0)+"%",label:"THIẾU CCCD",color:"#ef4444"}),
+          h(KCard,{val:(total?((af.filter(function(x){return x.email;}).length/total)*100).toFixed(1):0)+"%",label:"CÓ EMAIL",color:"#10b981"}),
+          h(KCard,{val:(total?((noEmail/total)*100).toFixed(1):0)+"%",label:"THIẾU EMAIL",color:"#f59e0b"})
+        ),
+        h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}},
+          h(SC,{title:"Nguồn cấp 1 – Hiệu quả",sub:"Tổng hồ sơ và XHB theo kênh"},
+            h(ResponsiveContainer,{width:"100%",height:240},
+              h(ComposedChart,{data:byKenh,margin:{top:20,right:30,left:-20,bottom:40}},
+                h(CartesianGrid,{strokeDasharray:"3 3",stroke:"#2d3148"}),
+                h(XAxis,{dataKey:"name",tick:{fill:"#8b92a9",fontSize:9,angle:-30,textAnchor:"end"},axisLine:false,tickLine:false}),
+                h(YAxis,{yAxisId:"left",tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),
+                h(Tooltip,TT),
+                h(Bar,{yAxisId:"left",dataKey:"total",fill:"#2d3a5a",radius:[3,3,0,0],name:"Tổng"},h(LabelList,{dataKey:"total",content:BL})),
+                h(Bar,{yAxisId:"left",dataKey:"xhb",fill:"#10b981",radius:[3,3,0,0],name:"XHB"},h(LabelList,{dataKey:"xhb",content:BL}))
+              )
+            )
+          ),
+          h(SC,{title:"Phân bổ hồ sơ theo kênh",sub:"Tỷ trọng từng kênh"},
+            h(ResponsiveContainer,{width:"100%",height:240},
+              h(PieChart,null,
+                h(Pie,{data:byKenh,cx:"40%",cy:"45%",innerRadius:65,outerRadius:105,dataKey:"total",nameKey:"name",labelLine:false,label:PL},
+                  byKenh.map(function(_,i){return h(Cell,{key:i,fill:C1[i]});})
+                ),
+                h(Tooltip,TT)
+              )
+            ),
+            h("div",{style:{display:"flex",flexWrap:"wrap",gap:"4px 12px",justifyContent:"center"}},
+              byKenh.map(function(k,i){return h("span",{key:i,style:{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#8b92a9"}},h("span",{style:{width:8,height:8,borderRadius:2,background:C1[i],display:"inline-block"}}),k.name);})
+            )
+          )
+        )
+      ),
+
+      // ĐIỂM SỐ
+      currentTab==="diem"&&h("div",null,
+        h("div",{style:{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}},
+          h(KCard,{val:avgTBM,label:"TBM TB",pct:"Thang 0-10",color:"#3b82f6"}),
+          h(KCard,{val:avgTH,label:"TỔ HỢP TB",pct:"Thang 0-30",color:"#10b981"}),
+          h(KCard,{val:avgDGNL,label:"ĐGNL TB",pct:"Thang 0-1200",color:"#8b5cf6"}),
+          h(KCard,{val:dTBM.length,label:"CÓ ĐIỂM TBM",color:"#f59e0b"})
+        ),
+        h("div",{style:{display:"grid",gridTemplateColumns:"2fr 1fr",gap:14}},
+          h(SC,{title:"Điểm TBM theo Ngành (Top 10)",sub:"Điểm trung bình môn"},
+            h(ResponsiveContainer,{width:"100%",height:280},
+              h(BarChart,{data:byMajor,layout:"vertical",margin:{top:0,right:60,left:100,bottom:0}},
+                h(CartesianGrid,{strokeDasharray:"3 3",stroke:"#2d3148",horizontal:false}),
+                h(XAxis,{type:"number",domain:[6,11],tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),
+                h(YAxis,{dataKey:"name",type:"category",tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false,width:95}),
+                h(Tooltip,TT),
+                h(Bar,{dataKey:"avg",radius:[0,4,4,0]},
+                  h(LabelList,{dataKey:"avg",position:"insideRight",formatter:function(v){return Number(v).toFixed(2);},style:{fill:"#fff",fontSize:11,fontWeight:700}}),
+                  byMajor.map(function(_,i){return h(Cell,{key:i,fill:i===0?"#ef4444":i===byMajor.length-1?"#10b981":"#3b82f6"});})
+                )
+              )
+            )
+          ),
+          h(SC,{title:"Radar TBM theo Ngành"},
+            h(ResponsiveContainer,{width:"100%",height:280},
+              h(RadarChart,{data:radarData,margin:{top:10,right:30,left:30,bottom:10}},
+                h(PolarGrid,{stroke:"#2d3148"}),
+                h(PolarAngleAxis,{dataKey:"subject",tick:function(props){
+                  var x=props.x,y=props.y,payload=props.payload,cx=props.cx;
+                  var val=radarData.find(function(d){return d.subject===payload.value;});
+                  var tbm=val?val.TBM:0;
+                  return h("g",null,
+                    h("text",{x:x,y:y,textAnchor:x>cx?"start":"end",dominantBaseline:"central",fill:"#8b92a9",fontSize:10},payload.value),
+                    h("text",{x:x,y:y+13,textAnchor:x>cx?"start":"end",dominantBaseline:"central",fill:"#f59e0b",fontSize:11,fontWeight:700},tbm?Number(tbm).toFixed(2):"")
+                  );
+                }}),
+                h(Radar,{name:"TBM",dataKey:"TBM",stroke:"#3b82f6",fill:"#3b82f6",fillOpacity:0.35,dot:{fill:"#3b82f6",r:4}}),
+                h(Tooltip,Object.assign({},TT,{formatter:function(v){return Number(v).toFixed(2);}}))
+              )
+            )
+          )
+        )
+      ),
+
+      // ĐỊA LÝ
+      currentTab==="dialy"&&h("div",null,
+        h("div",{style:{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}},
+          h(KCard,{val:(byTinh[0]&&byTinh[0].value||0).toLocaleString(),label:byTinh[0]&&byTinh[0].name||"TP.HCM",pct:(total?((byTinh[0]&&byTinh[0].value||0)/total*100).toFixed(1):0)+"% tổng",color:"#3b82f6"}),
+          h(KCard,{val:(byTinh[1]&&byTinh[1].value||0).toLocaleString(),label:byTinh[1]&&byTinh[1].name||"",pct:"Đứng thứ 2",color:"#10b981"}),
+          h(KCard,{val:(byTinh[2]&&byTinh[2].value||0).toLocaleString(),label:byTinh[2]&&byTinh[2].name||"",pct:"Đứng thứ 3",color:"#f59e0b"}),
+          h(KCard,{val:byTinh.length,label:"TỈNH/THÀNH PHỐ",color:"#8b5cf6"})
+        ),
+        h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}},
+          h(SC,{title:"Phân bổ theo Tỉnh/Thành phố",sub:"Click vào tỉnh để xem chi tiết tiến trình"},
+            h(ResponsiveContainer,{width:"100%",height:320},
+              h(BarChart,{data:byTinhStack,layout:"vertical",margin:{top:0,right:20,left:90,bottom:0},
+                onClick:function(e){if(e&&e.activePayload)showTinhDetail(e.activePayload[0].payload.name);}},
+                h(CartesianGrid,{strokeDasharray:"3 3",stroke:"#2d3148",horizontal:false}),
+                h(XAxis,{type:"number",tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),
+                h(YAxis,{dataKey:"name",type:"category",tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false,width:85}),
+                h(Tooltip,Object.assign({},TT,{cursor:{fill:"#3b82f622"}})),
+                STL.map(function(s,i){return h(Bar,{key:s,dataKey:s,fill:C1[i],stackId:"a",name:s,style:{cursor:"pointer"},radius:i===STL.length-1?[0,4,4,0]:[0,0,0,0]});})
+              )
+            ),
+            h("div",{style:{display:"flex",flexWrap:"wrap",gap:"4px 14px",justifyContent:"center",marginTop:8}},
+              STL.map(function(s,i){return h("span",{key:s,style:{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#8b92a9"}},h("span",{style:{width:8,height:8,borderRadius:2,background:C1[i],display:"inline-block"}}),s);})
+            )
+          ),
+          h(SC,{title:"Top 8 Tỉnh – Tỷ trọng",sub:"Click vào phần để xem chi tiết"},
+            h(ResponsiveContainer,{width:"100%",height:260},
+              h(PieChart,null,
+                h(Pie,{data:byTinh.slice(0,8),cx:"40%",cy:"45%",innerRadius:60,outerRadius:105,dataKey:"value",nameKey:"name",labelLine:false,label:PL,
+                  onClick:function(e){if(e)showTinhDetail(e.name);},style:{cursor:"pointer"}},
+                  byTinh.slice(0,8).map(function(_,i){return h(Cell,{key:i,fill:C1[i]});})
+                ),
+                h(Tooltip,TT)
+              )
+            ),
+            h("div",{style:{display:"flex",flexWrap:"wrap",gap:"4px 10px",justifyContent:"center"}},
+              byTinh.slice(0,8).map(function(t,i){return h("span",{key:i,style:{display:"flex",alignItems:"center",gap:4,fontSize:10,color:"#8b92a9"}},h("span",{style:{width:7,height:7,borderRadius:2,background:C1[i],display:"inline-block"}}),t.name);})
+            )
+          )
+        )
+      ),
+
+      // PHÂN TÍCH 3 LOẠI ĐIỂM
+      currentTab==="phanloai"&&h("div",null,
+        h("div",{style:{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}},
+          h(KCard,{val:dTBM.length.toLocaleString(),label:"CÓ ĐIỂM TBM",pct:(total?((dTBM.length/total)*100).toFixed(1):0)+"%",color:"#3b82f6"}),
+          h(KCard,{val:dTH.length.toLocaleString(),label:"CÓ TỔ HỢP",pct:(total?((dTH.length/total)*100).toFixed(1):0)+"%",color:"#10b981"}),
+          h(KCard,{val:dDGNL.length.toLocaleString(),label:"CÓ ĐGNL",pct:(total?((dDGNL.length/total)*100).toFixed(1):0)+"%",color:"#8b5cf6"}),
+          h(KCard,{val:avgDGNL,label:"TB ĐIỂM ĐGNL",color:"#f59e0b"})
+        ),
+        h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginBottom:14}},
+          h(SC,{title:"Điểm TBM (Học bạ)",sub:"TB: "+avgTBM},
+            h(ResponsiveContainer,{width:"100%",height:180},
+              h(BarChart,{data:tbmH,margin:{top:20,right:0,left:-25,bottom:0}},
+                h(XAxis,{dataKey:"r",tick:{fill:"#8b92a9",fontSize:9},axisLine:false,tickLine:false}),
+                h(YAxis,{tick:{fill:"#8b92a9",fontSize:9},axisLine:false,tickLine:false}),
+                h(Tooltip,TT),
+                h(Bar,{dataKey:"v"},h(LabelList,{dataKey:"v",content:BL}),tbmH.map(function(_,i){return h(Cell,{key:i,fill:HC[i]});}))
+              )
+            )
+          ),
+          h(SC,{title:"Điểm Tổ hợp môn",sub:"TB: "+avgTH},
+            h(ResponsiveContainer,{width:"100%",height:180},
+              h(BarChart,{data:thH,margin:{top:20,right:0,left:-25,bottom:0}},
+                h(XAxis,{dataKey:"r",tick:{fill:"#8b92a9",fontSize:9},axisLine:false,tickLine:false}),
+                h(YAxis,{tick:{fill:"#8b92a9",fontSize:9},axisLine:false,tickLine:false}),
+                h(Tooltip,TT),
+                h(Bar,{dataKey:"v"},h(LabelList,{dataKey:"v",content:BL}),thH.map(function(_,i){return h(Cell,{key:i,fill:HC[i]});}))
+              )
+            )
+          ),
+          h(SC,{title:"Điểm ĐGNL",sub:"TB: "+avgDGNL},
+            [["< 650","#ef4444",[0,650]],[" 650-750","#f59e0b",[650,750]],["750-850","#10b981",[750,850]],["850+","#3b82f6",[850,9999]]].map(function(item,i){
+              var cnt=dDGNL.filter(function(x){return x>=item[2][0]&&x<item[2][1];}).length;
+              var pct=dDGNL.length?((cnt/dDGNL.length)*100).toFixed(0):0;
+              return h("div",{key:i,style:{display:"flex",alignItems:"center",gap:8,marginTop:10}},
+                h("span",{style:{width:60,fontSize:11,color:"#8b92a9",flexShrink:0}},item[0]),
+                h("div",{style:{flex:1,background:"#2d3148",borderRadius:3,height:22,overflow:"hidden",position:"relative"}},
+                  h("div",{style:{width:pct+"%",height:"100%",background:item[1],borderRadius:3}}),
+                  h("span",{style:{position:"absolute",left:8,top:"50%",transform:"translateY(-50%)",color:"#fff",fontSize:11,fontWeight:700}},cnt)
+                ),
+                h("span",{style:{fontSize:10,color:"#8b92a9",minWidth:28,textAlign:"right"}},pct+"%")
               );
             })
           )
-        );
-      }
-
-      async function handleAI(){
-        setAiLd(true);setAiTxt("");
-        try{var r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:"Chuyên gia tuyển sinh. Phân tích: 1)Tổng quan, 2)Cảnh báo, 3)Đề xuất. Tiếng Việt, emoji.",messages:[{role:"user",content:"Tổng:"+total+",XHB:"+xhb+",Fail:"+fail+",TBM:"+avgTBM+",CCCD:"+noCCCD+",Email:"+noEmail}]})});var d=await r.json();setAiTxt(d.content&&d.content[0]&&d.content[0].text||"Không có phản hồi.");}catch(e){setAiTxt("Lỗi AI.");}
-        setAiLd(false);
-      }
-
-      async function handleFile(e){
-        var file=e.target.files[0];if(!file)return;
-        setUploadMsg("⏳ Đang đọc: "+file.name);setUploadPct(20);
-        try{
-          var buf=await file.arrayBuffer();setUploadPct(50);
-          var wb=XLSX.read(buf,{type:"array"});var ws=wb.Sheets[wb.SheetNames[0]];setUploadPct(70);
-          var rows=XLSX.utils.sheet_to_json(ws,{defval:""});setUploadPct(90);
-          var mapped=rows.map(function(r,i){return{_id:"r"+i,name:r["Họ và tên"]||r["Họ tên"]||r["name"]||"",phone:String(r["Di động"]||r["Số điện thoại"]||r["phone"]||""),province:r["Tỉnh/ Thành phố"]||r["Tỉnh/Thành"]||r["tinh"]||"",major:r["NGÀNH ĐKXT NV1"]||r["Ngành NV1"]||r["major"]||"",status:r["Tiến trình"]||r["Trạng thái"]||r["status"]||"",telesales:r["Tổ"]||r["Telesales"]||r["Tổ tư vấn"]||"",kenh:r["Nguồn_DHV cấp 1"]||r["Kênh"]||r["Nguồn"]||"",cccd:r["Số CCCD/ Mã số định danh"]||r["CCCD"]||"",email:r["Email"]||r["email"]||"",diem_tbm:parseFloat(r["Điểm TBM"]||0)||0,diem_tohop:parseFloat(r["Điểm Tổ hợp môn"]||0)||0,diem_dgnl:parseFloat(r["Điểm DGNL"]||0)||0,xhb:(r["Tiến trình"]||"").toLowerCase().includes("xét học bạ")?"Có XHB":"Không XHB",created_at:r["Ngày"]||r["created_at"]||new Date().toISOString().split("T")[0]};});
-          setUploadPct(100);setData(mapped);setMock(false);setSt("ok");
-          setUploadMsg("✅ "+file.name+" — "+mapped.length.toLocaleString()+" bản ghi");setCurrentTab("funnel");
-        }catch(err){setUploadMsg("❌ Lỗi: "+err.message);setUploadPct(0);}
-      }
-
-      return h("div",{style:{minHeight:"100vh",background:"#0e1117",fontFamily:"'Segoe UI',sans-serif",color:"#c8cde0",fontSize:13}},
-        h(Modal,{modal,onClose:function(){setModal(null);}}),
-        // Header
-        h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"18px 24px 0",flexWrap:"wrap",gap:12}},
-          h("div",null,
-            h("h1",{style:{fontSize:22,fontWeight:800,color:"#fff",lineHeight:1.2,margin:0}},"Phân tích ",h("span",{style:{color:"#3b82f6"}},"Chuyên sâu"),h("br"),"Dữ liệu Thí sinh 2026"),
-            h("div",{style:{fontSize:11,color:"#8b92a9",marginTop:6}},"ĐH Hùng Vương TP.HCM · ",(mock?"Demo":"Live"),st==="ok"&&!mock&&h("span",{style:{color:"#10b981",marginLeft:8}},"● Live · "+cd+"s"),mock&&h("span",{style:{color:"#8b5cf6",marginLeft:8}},"● Demo mode"))
-          ),
-          h("div",{style:{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}},
-            h("div",{style:{display:"flex",flexDirection:"column",gap:2}},
-              h("div",{style:{fontSize:10,color:"#8b92a9"}},"🗺️ Tỉnh/Thành"),
-              h("div",{style:{display:"flex",gap:4}},
-                h("button",{title:"Reset bộ lọc",onClick:function(){setFilterTo("Tất cả");setFTinh("Tất cả");},style:{background:"#2d3148",border:"1px solid #3b82f6",color:"#3b82f6",borderRadius:6,width:32,cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}},"↺"),
-                h("select",{value:fTinh,onChange:function(e){setFTinh(e.target.value);},style:Object.assign({},inp,{cursor:"pointer"})},tinhL.map(function(t){return h("option",{key:t},t);}))
-              )
-            ),
-            h("div",{style:{display:"flex",flexDirection:"column",gap:2}},
-              h("div",{style:{fontSize:10,color:"#8b92a9"}},"👤 Tổ tư vấn"),
-              h("select",{value:filterTo,onChange:function(e){setFilterTo(e.target.value);},style:Object.assign({},inp,{cursor:"pointer"})},["Tất cả"].concat(TOL).map(function(t){return h("option",{key:t},t);}))
-            ),
-            mock?h("button",{onClick:function(){setMock(false);doFetch();},style:{background:"#3b82f633",border:"1px solid #3b82f6",color:"#3b82f6",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:600,cursor:"pointer"}},"← API thật"):h("button",{onClick:function(){setMock(true);},style:{background:"#8b5cf633",border:"1px solid #8b5cf6",color:"#8b5cf6",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:600,cursor:"pointer"}},"Demo"),
-            h("input",{ref:fileRef,type:"file",accept:".xlsx,.xls,.csv",style:{display:"none"},onChange:handleFile}),
-            h("button",{onClick:function(){fileRef.current.click();},style:{background:"#3b82f6",border:"none",color:"#fff",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:600,cursor:"pointer"}},"+Upload")
-          )
         ),
-        // Nav
-        h("div",{style:{display:"flex",gap:8,padding:"14px 24px",overflowX:"auto",borderBottom:"1px solid #2d3148"}},
-          NAV.map(function(t){return h(Tag,{key:t.id,active:currentTab===t.id,onClick:function(){setCurrentTab(t.id);}},t.icon+" "+t.label);})
-        ),
-        h("div",{style:{padding:"16px 24px"}},
-
-          // TIẾN TRÌNH
-          currentTab==="funnel"&&h("div",null,
-            h("div",{style:{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}},
-              h(KCard,{val:total.toLocaleString(),label:"TỔNG HỒ SƠ",color:"#3b82f6"}),
-              h(KCard,{val:xhb.toLocaleString(),label:"XÉT HỌC BẠ",pct:(total?((xhb/total)*100).toFixed(1):0)+"% tổng",color:"#10b981"}),
-              h(KCard,{val:tiepcan.toLocaleString(),label:"ĐANG TIẾP CẬN",pct:(total?((tiepcan/total)*100).toFixed(1):0)+"% tổng",color:"#f59e0b"}),
-              h(KCard,{val:fail.toLocaleString(),label:"FAIL",pct:(total?((fail/total)*100).toFixed(1):0)+"% tổng",color:"#ef4444"})
-            ),
-            h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}},
-              h(SC,{title:"Phễu Chuyển đổi",sub:"Số lượng thí sinh tại từng giai đoạn"},
-                byStatus.map(function(s,i){var pct=total?((s.v/total)*100).toFixed(1):0;return h("div",{key:i,style:{display:"flex",alignItems:"center",gap:10,marginBottom:10}},h("span",{style:{width:80,fontSize:12,color:"#8b92a9",textAlign:"right",flexShrink:0}},s.name),h("div",{style:{flex:1,background:"#2d3148",borderRadius:4,height:28,overflow:"hidden",position:"relative"}},h("div",{style:{width:pct+"%",height:"100%",background:C1[i],borderRadius:4}}),h("span",{style:{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",color:"#fff",fontSize:12,fontWeight:700}},s.v.toLocaleString())),h("span",{style:{fontSize:12,fontWeight:600,color:C1[i],minWidth:40,textAlign:"right"}},s.v),h("span",{style:{fontSize:11,color:"#8b92a9",minWidth:42,textAlign:"right"}},pct+"%"));})
-              ),
-              h(SC,{title:"XHB theo Tổ tư vấn",sub:"Số hồ sơ Xét Học bạ của từng Tổ"},
-                h(ResponsiveContainer,{width:"100%",height:240},h(BarChart,{data:byTo,margin:{top:20,right:20,left:-20,bottom:0}},h(CartesianGrid,{strokeDasharray:"3 3",stroke:"#2d3148"}),h(XAxis,{dataKey:"name",tick:{fill:"#8b92a9",fontSize:11},axisLine:false,tickLine:false}),h(YAxis,{tick:{fill:"#8b92a9",fontSize:11},axisLine:false,tickLine:false}),h(Tooltip,TT),h(Bar,{dataKey:"xhb",fill:"#10b981",radius:[4,4,0,0],name:"XHB"},h(LabelList,{dataKey:"xhb",content:BL}))))
-              )
-            ),
-            h(SC,{title:"Tiến trình theo Tổ tư vấn",sub:"So sánh từng giai đoạn giữa các Tổ",style:{marginBottom:14}},
-              h(ResponsiveContainer,{width:"100%",height:260},h(BarChart,{data:gpData,margin:{top:20,right:10,left:0,bottom:0},barCategoryGap:"10%",barGap:1},h(CartesianGrid,{strokeDasharray:"3 3",stroke:"#2d3148"}),h(XAxis,{dataKey:"name",tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),h(YAxis,{tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),h(Tooltip,TT),STL.map(function(s,i){return h(Bar,{key:s,dataKey:s,fill:C1[i],radius:[3,3,0,0],name:s},h(LabelList,{dataKey:s,content:BL}));}))),
-              h("div",{style:{display:"flex",flexWrap:"wrap",gap:"4px 14px",justifyContent:"center",marginTop:8}},STL.map(function(s,i){return h("span",{key:s,style:{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#8b92a9"}},h("span",{style:{width:8,height:8,borderRadius:2,background:C1[i],display:"inline-block"}}),s);}))
-            ),
-            h(SC,{title:"XHB theo ngày của từng Tổ",sub:"14 ngày gần nhất"},
-              h(ResponsiveContainer,{width:"100%",height:240},h(LineChart,{data:xhbLine,margin:{top:10,right:20,left:-20,bottom:0}},h(CartesianGrid,{strokeDasharray:"3 3",stroke:"#2d3148"}),h(XAxis,{dataKey:"ngay",tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),h(YAxis,{tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),h(Tooltip,TT),TOL.map(function(t,i){return h(Line,{key:t,type:"monotone",dataKey:t,stroke:TOC[i],strokeWidth:2,dot:{fill:TOC[i],r:3},name:t});}))),
-              h("div",{style:{display:"flex",flexWrap:"wrap",gap:"4px 14px",justifyContent:"center",marginTop:8}},TOL.map(function(t,i){return h("span",{key:t,style:{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#8b92a9"}},h("span",{style:{width:16,height:3,background:TOC[i],display:"inline-block",borderRadius:2}}),t);}))
-            )
-          ),
-
-          // KÊNH
-          currentTab==="kenh"&&h("div",null,
-            h("div",{style:{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}},
-              h(KCard,{val:(total?((af.filter(function(x){return x.cccd;}).length/total)*100).toFixed(1):0)+"%",label:"CÓ CCCD",color:"#3b82f6"}),
-              h(KCard,{val:(total?((noCCCD/total)*100).toFixed(1):0)+"%",label:"THIẾU CCCD",color:"#ef4444"}),
-              h(KCard,{val:(total?((af.filter(function(x){return x.email;}).length/total)*100).toFixed(1):0)+"%",label:"CÓ EMAIL",color:"#10b981"}),
-              h(KCard,{val:(total?((noEmail/total)*100).toFixed(1):0)+"%",label:"THIẾU EMAIL",color:"#f59e0b"})
-            ),
-            h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}},
-              h(SC,{title:"Nguồn cấp 1 – Hiệu quả",sub:"Tổng hồ sơ và XHB theo kênh"},
-                h(ResponsiveContainer,{width:"100%",height:240},h(ComposedChart,{data:byKenh,margin:{top:20,right:30,left:-20,bottom:40}},h(CartesianGrid,{strokeDasharray:"3 3",stroke:"#2d3148"}),h(XAxis,{dataKey:"name",tick:{fill:"#8b92a9",fontSize:9,angle:-30,textAnchor:"end"},axisLine:false,tickLine:false}),h(YAxis,{yAxisId:"left",tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),h(Tooltip,TT),h(Bar,{yAxisId:"left",dataKey:"total",fill:"#2d3a5a",radius:[3,3,0,0],name:"Tổng"},h(LabelList,{dataKey:"total",content:BL})),h(Bar,{yAxisId:"left",dataKey:"xhb",fill:"#10b981",radius:[3,3,0,0],name:"XHB"},h(LabelList,{dataKey:"xhb",content:BL}))))
-              ),
-              h(SC,{title:"Phân bổ hồ sơ theo kênh",sub:"Tỷ trọng từng kênh"},
-                h(ResponsiveContainer,{width:"100%",height:240},h(PieChart,null,h(Pie,{data:byKenh,cx:"40%",cy:"45%",innerRadius:65,outerRadius:105,dataKey:"total",nameKey:"name",labelLine:false,label:PL},byKenh.map(function(_,i){return h(Cell,{key:i,fill:C1[i]});})),h(Tooltip,TT))),
-                h("div",{style:{display:"flex",flexWrap:"wrap",gap:"4px 12px",justifyContent:"center"}},byKenh.map(function(k,i){return h("span",{key:i,style:{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#8b92a9"}},h("span",{style:{width:8,height:8,borderRadius:2,background:C1[i],display:"inline-block"}}),k.name);}))
+        h("div",{style:{display:"grid",gridTemplateColumns:"1fr 2fr",gap:14}},
+          h(SC,{title:"Tỷ lệ phổ theo phương thức"},
+            h(ResponsiveContainer,{width:"100%",height:180},
+              h(BarChart,{data:[{name:"TBM",co:dTBM.length,k:total-dTBM.length},{name:"Tổ hợp",co:dTH.length,k:total-dTH.length},{name:"ĐGNL",co:dDGNL.length,k:total-dDGNL.length}],margin:{top:20,right:0,left:-20,bottom:0}},
+                h(XAxis,{dataKey:"name",tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),
+                h(YAxis,{tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),
+                h(Tooltip,TT),
+                h(Bar,{dataKey:"co",fill:"#3b82f6",name:"Có điểm",stackId:"a"},h(LabelList,{dataKey:"co",content:BL})),
+                h(Bar,{dataKey:"k",fill:"#2d3148",name:"Không có",stackId:"a"})
               )
             )
           ),
-
-          // ĐIỂM SỐ
-          currentTab==="diem"&&h("div",null,
-            h("div",{style:{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}},
-              h(KCard,{val:avgTBM,label:"TBM TB",pct:"Thang 0-10",color:"#3b82f6"}),
-              h(KCard,{val:avgTH,label:"TỔ HỢP TB",pct:"Thang 0-30",color:"#10b981"}),
-              h(KCard,{val:avgDGNL,label:"ĐGNL TB",pct:"Thang 0-1200",color:"#8b5cf6"}),
-              h(KCard,{val:dTBM.length,label:"CÓ ĐIỂM TBM",color:"#f59e0b"})
-            ),
-            h("div",{style:{display:"grid",gridTemplateColumns:"2fr 1fr",gap:14}},
-              h(SC,{title:"Điểm TBM theo Ngành (Top 10)",sub:"Điểm trung bình môn"},
-                h(ResponsiveContainer,{width:"100%",height:280},h(BarChart,{data:byMajor,layout:"vertical",margin:{top:0,right:60,left:100,bottom:0}},h(CartesianGrid,{strokeDasharray:"3 3",stroke:"#2d3148",horizontal:false}),h(XAxis,{type:"number",domain:[6,11],tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),h(YAxis,{dataKey:"name",type:"category",tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false,width:95}),h(Tooltip,TT),h(Bar,{dataKey:"avg",radius:[0,4,4,0]},h(LabelList,{dataKey:"avg",position:"insideRight",formatter:function(v){return Number(v).toFixed(2);},style:{fill:"#fff",fontSize:11,fontWeight:700}}),byMajor.map(function(_,i){return h(Cell,{key:i,fill:i===0?"#ef4444":i===byMajor.length-1?"#10b981":"#3b82f6"});}))))
-              ),
-              h(SC,{title:"Radar TBM theo Ngành"},
-                h(ResponsiveContainer,{width:"100%",height:280},h(RadarChart,{data:radarData,margin:{top:10,right:30,left:30,bottom:10}},h(PolarGrid,{stroke:"#2d3148"}),h(PolarAngleAxis,{dataKey:"subject",tick:function(props){var x=props.x,y=props.y,payload=props.payload,cx=props.cx;var val=radarData.find(function(d){return d.subject===payload.value;});var tbm=val?val.TBM:0;return h("g",null,h("text",{x,y,textAnchor:x>cx?"start":"end",dominantBaseline:"central",fill:"#8b92a9",fontSize:10},payload.value),h("text",{x,y:y+13,textAnchor:x>cx?"start":"end",dominantBaseline:"central",fill:"#f59e0b",fontSize:11,fontWeight:700},tbm?Number(tbm).toFixed(2):""));}}),h(Radar,{name:"TBM",dataKey:"TBM",stroke:"#3b82f6",fill:"#3b82f6",fillOpacity:0.35,dot:{fill:"#3b82f6",r:4}}),h(Tooltip,Object.assign({},TT,{formatter:function(v){return Number(v).toFixed(2);}})))))
-              )
-            )
-          ),
-
-          // ĐỊA LÝ
-          currentTab==="dialy"&&h("div",null,
-            h("div",{style:{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}},
-              h(KCard,{val:(byTinh[0]&&byTinh[0].value||0).toLocaleString(),label:byTinh[0]&&byTinh[0].name||"TP.HCM",pct:(total?((byTinh[0]&&byTinh[0].value||0)/total*100).toFixed(1):0)+"% tổng",color:"#3b82f6"}),
-              h(KCard,{val:(byTinh[1]&&byTinh[1].value||0).toLocaleString(),label:byTinh[1]&&byTinh[1].name||"",pct:"Đứng thứ 2",color:"#10b981"}),
-              h(KCard,{val:(byTinh[2]&&byTinh[2].value||0).toLocaleString(),label:byTinh[2]&&byTinh[2].name||"",pct:"Đứng thứ 3",color:"#f59e0b"}),
-              h(KCard,{val:byTinh.length,label:"TỈNH/THÀNH PHỐ",color:"#8b5cf6"})
-            ),
-            h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}},
-              h(SC,{title:"Phân bổ theo Tỉnh/Thành phố",sub:"Click vào tỉnh để xem chi tiết tiến trình"},
-                h(ResponsiveContainer,{width:"100%",height:320},
-                  h(BarChart,{data:byTinhStack,layout:"vertical",margin:{top:0,right:20,left:90,bottom:0},onClick:function(e){if(!e||!e.activePayload)return;showTinhDetail(e.activePayload[0].payload.name);}},
-                    h(CartesianGrid,{strokeDasharray:"3 3",stroke:"#2d3148",horizontal:false}),
-                    h(XAxis,{type:"number",tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),
-                    h(YAxis,{dataKey:"name",type:"category",tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false,width:85}),
-                    h(Tooltip,Object.assign({},TT,{cursor:{fill:"#3b82f622"}})),
-                    STL.map(function(s,i){return h(Bar,{key:s,dataKey:s,fill:C1[i],stackId:"a",name:s,style:{cursor:"pointer"},radius:i===STL.length-1?[0,4,4,0]:[0,0,0,0]});})
-                  )
-                ),
-                h("div",{style:{display:"flex",flexWrap:"wrap",gap:"4px 14px",justifyContent:"center",marginTop:8}},STL.map(function(s,i){return h("span",{key:s,style:{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#8b92a9"}},h("span",{style:{width:8,height:8,borderRadius:2,background:C1[i],display:"inline-block"}}),s);}))
-              ),
-              h(SC,{title:"Top 8 Tỉnh – Tỷ trọng",sub:"Click vào phần để xem chi tiết"},
-                h(ResponsiveContainer,{width:"100%",height:260},
-                  h(PieChart,null,
-                    h(Pie,{data:byTinh.slice(0,8),cx:"40%",cy:"45%",innerRadius:60,outerRadius:105,dataKey:"value",nameKey:"name",labelLine:false,label:PL,onClick:function(e){if(e)showTinhDetail(e.name);},style:{cursor:"pointer"}},
-                      byTinh.slice(0,8).map(function(_,i){return h(Cell,{key:i,fill:C1[i]});})
-                    ),
-                    h(Tooltip,TT)
-                  )
-                ),
-                h("div",{style:{display:"flex",flexWrap:"wrap",gap:"4px 10px",justifyContent:"center"}},byTinh.slice(0,8).map(function(t,i){return h("span",{key:i,style:{display:"flex",alignItems:"center",gap:4,fontSize:10,color:"#8b92a9"}},h("span",{style:{width:7,height:7,borderRadius:2,background:C1[i],display:"inline-block"}}),t.name);}))
-              )
-            )
-          ),
-
-          // PHÂN TÍCH 3 LOẠI ĐIỂM
-          currentTab==="phanloai"&&h("div",null,
-            h("div",{style:{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}},
-              h(KCard,{val:dTBM.length.toLocaleString(),label:"CÓ ĐIỂM TBM",pct:(total?((dTBM.length/total)*100).toFixed(1):0)+"%",color:"#3b82f6"}),
-              h(KCard,{val:dTH.length.toLocaleString(),label:"CÓ TỔ HỢP",pct:(total?((dTH.length/total)*100).toFixed(1):0)+"%",color:"#10b981"}),
-              h(KCard,{val:dDGNL.length.toLocaleString(),label:"CÓ ĐGNL",pct:(total?((dDGNL.length/total)*100).toFixed(1):0)+"%",color:"#8b5cf6"}),
-              h(KCard,{val:avgDGNL,label:"TB ĐIỂM ĐGNL",color:"#f59e0b"})
-            ),
-            h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginBottom:14}},
-              h(SC,{title:"Điểm TBM (Học bạ)",sub:"TB: "+avgTBM},h(ResponsiveContainer,{width:"100%",height:180},h(BarChart,{data:tbmH,margin:{top:20,right:0,left:-25,bottom:0}},h(XAxis,{dataKey:"r",tick:{fill:"#8b92a9",fontSize:9},axisLine:false,tickLine:false}),h(YAxis,{tick:{fill:"#8b92a9",fontSize:9},axisLine:false,tickLine:false}),h(Tooltip,TT),h(Bar,{dataKey:"v"},h(LabelList,{dataKey:"v",content:BL}),tbmH.map(function(_,i){return h(Cell,{key:i,fill:HC[i]});}))))),
-              h(SC,{title:"Điểm Tổ hợp môn",sub:"TB: "+avgTH},h(ResponsiveContainer,{width:"100%",height:180},h(BarChart,{data:thH,margin:{top:20,right:0,left:-25,bottom:0}},h(XAxis,{dataKey:"r",tick:{fill:"#8b92a9",fontSize:9},axisLine:false,tickLine:false}),h(YAxis,{tick:{fill:"#8b92a9",fontSize:9},axisLine:false,tickLine:false}),h(Tooltip,TT),h(Bar,{dataKey:"v"},h(LabelList,{dataKey:"v",content:BL}),thH.map(function(_,i){return h(Cell,{key:i,fill:HC[i]});}))))),
-              h(SC,{title:"Điểm ĐGNL",sub:"TB: "+avgDGNL},[["< 650","#ef4444",[0,650]],[" 650-750","#f59e0b",[650,750]],["750-850","#10b981",[750,850]],["850+","#3b82f6",[850,9999]]].map(function(item,i){var cnt=dDGNL.filter(function(x){return x>=item[2][0]&&x<item[2][1];}).length;var pct=dDGNL.length?((cnt/dDGNL.length)*100).toFixed(0):0;return h("div",{key:i,style:{display:"flex",alignItems:"center",gap:8,marginTop:10}},h("span",{style:{width:60,fontSize:11,color:"#8b92a9",flexShrink:0}},item[0]),h("div",{style:{flex:1,background:"#2d3148",borderRadius:3,height:22,overflow:"hidden",position:"relative"}},h("div",{style:{width:pct+"%",height:"100%",background:item[1],borderRadius:3}}),h("span",{style:{position:"absolute",left:8,top:"50%",transform:"translateY(-50%)",color:"#fff",fontSize:11,fontWeight:700}},cnt)),h("span",{style:{fontSize:10,color:"#8b92a9",minWidth:28,textAlign:"right"}},pct+"%"));}))
-            ),
-            h("div",{style:{display:"grid",gridTemplateColumns:"1fr 2fr",gap:14}},
-              h(SC,{title:"Tỷ lệ phổ theo phương thức"},h(ResponsiveContainer,{width:"100%",height:180},h(BarChart,{data:[{name:"TBM",co:dTBM.length,k:total-dTBM.length},{name:"Tổ hợp",co:dTH.length,k:total-dTH.length},{name:"ĐGNL",co:dDGNL.length,k:total-dDGNL.length}],margin:{top:20,right:0,left:-20,bottom:0}},h(XAxis,{dataKey:"name",tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),h(YAxis,{tick:{fill:"#8b92a9",fontSize:10},axisLine:false,tickLine:false}),h(Tooltip,TT),h(Bar,{dataKey:"co",fill:"#3b82f6",name:"Có điểm",stackId:"a"},h(LabelList,{dataKey:"co",content:BL})),h(Bar,{dataKey:"k",fill:"#2d3148",name:"Không có",stackId:"a"})))),
-              h(SC,{title:"Điểm TBM: XHB và Không XHB",sub:"So sánh điểm trung bình 2 nhóm"},h("div",{style:{display:"flex",gap:12,marginTop:8}},[{g:"Có XHB",c:"#10b981"},{g:"Không XHB",c:"#ef4444"}].map(function(item,i){var group=af.filter(function(x){return x.xhb===item.g&&x.diem_tbm;});var avg=group.length?(group.reduce(function(a,x){return a+(x.diem_tbm||0);},0)/group.length).toFixed(2):0;return h("div",{key:i,style:{flex:1,background:"#1a2540",border:"1px solid "+item.c+"44",borderRadius:8,padding:"20px",textAlign:"center"}},h("div",{style:{fontSize:36,fontWeight:800,color:item.c}},avg),h("div",{style:{fontSize:12,color:"#8b92a9",marginTop:6}},item.g),h("div",{style:{fontSize:11,color:"#8b92a9"}},group.length+" thí sinh"));})))
-            )
-          ),
-
-          // AI
-          currentTab==="ai"&&h("div",{style:{maxWidth:800}},
-            h("div",{style:{background:"#1a1f35",border:"1px solid #3b82f688",borderRadius:10,padding:"20px",marginBottom:14}},
-              h("div",{style:{display:"flex",alignItems:"center",gap:12,marginBottom:14}},h("span",{style:{fontSize:28}},"🤖"),h("div",null,h("div",{style:{fontWeight:700,color:"#e8eaf0",fontSize:15}},"AI Insight"),h("div",{style:{fontSize:11,color:"#8b92a9",marginTop:2}},total.toLocaleString()+" hồ sơ · Claude AI"))),
-              h("button",{onClick:handleAI,disabled:aiLd,style:{background:aiLd?"#2d3148":"linear-gradient(135deg,#3b82f6,#8b5cf6)",border:"none",color:"#fff",borderRadius:8,padding:"11px 0",fontSize:14,fontWeight:600,width:"100%",cursor:"pointer"}},aiLd?"⏳ Đang phân tích...":"✨ Phân tích ngay")
-            ),
-            aiTxt&&h("div",{style:{background:"#161b2e",border:"1px solid #2d3148",borderRadius:10,padding:"20px"}},h("div",{style:{fontSize:12,color:"#3b82f6",fontWeight:700,marginBottom:12}},"🤖 Kết quả"),h("div",{style:{fontSize:13,color:"#c8cde0",lineHeight:1.9,whiteSpace:"pre-wrap"}},aiTxt))
-          ),
-
-          // DỮ LIỆU
-          currentTab==="data"&&h("div",null,
-            h("div",{style:{display:"flex",gap:8,flexWrap:"wrap",alignItems:"flex-end",marginBottom:10}},
-              h("div",{style:{flex:1,minWidth:160}},h("div",{style:{fontSize:10,color:"#8b92a9",marginBottom:3}},"🔍 Tìm kiếm"),h("input",{placeholder:"Tên, SĐT...",value:srch,onChange:function(e){setSrch(e.target.value);setPg(1);},style:Object.assign({},inp,{width:"100%"})})),
-              [[tinhL,fTinh,setFTinh,"🗺️ Tỉnh/Thành"],[stL,fSt,setFSt,"📌 Tiến trình"],[tsL,fTs,setFTs,"👤 Tổ tư vấn"]].map(function(item,i){return h("div",{key:i},h("div",{style:{fontSize:10,color:"#8b92a9",marginBottom:3}},item[3]),h("select",{value:item[1],onChange:function(e){item[2](e.target.value);setPg(1);},style:inp},item[0].map(function(t){return h("option",{key:t},t);})));}),
-              h("span",{style:{fontSize:11,color:"#8b92a9",paddingBottom:6}},filtered.length+" kết quả")
-            ),
-            h("div",{style:{background:"#161b2e",border:"1px solid #2d3148",borderRadius:10,overflow:"hidden"}},
-              h("div",{style:{overflowX:"auto"}},
-                h("table",{style:{width:"100%",borderCollapse:"collapse"}},
-                  h("thead",null,h("tr",{style:{background:"#0e1117"}},[["name","Họ tên"],["phone","SĐT"],["province","Tỉnh"],["major","Ngành"],["status","Tiến trình"],["telesales","Tổ"],["diem_tbm","TBM"],["cccd","CCCD"],["email","Email"],["created_at","Ngày"]].map(function(col){return h("th",{key:col[0],onClick:function(){doSort(col[0]);},style:thS},col[1]+(sCol===col[0]?(sDir==="asc"?" ↑":" ↓"):""));}))),
-                  h("tbody",null,paged.length===0?h("tr",null,h("td",{colSpan:10,style:{padding:"24px",textAlign:"center",color:"#8b92a9"}},"Không có dữ liệu")):paged.map(function(r,i){return h("tr",{key:i,style:{borderBottom:"1px solid #1a1f35",background:i%2===0?"transparent":"#111620"}},h("td",{style:Object.assign({},tdS,{color:"#e8eaf0",fontWeight:500})},r.name||"—"),h("td",{style:tdS},r.phone||"—"),h("td",{style:tdS},r.province||"—"),h("td",{style:tdS},h("span",{style:{background:"#2d3148",borderRadius:4,padding:"2px 7px",fontSize:10}},r.major||"—")),h("td",{style:tdS},h("span",{style:{borderRadius:4,padding:"2px 6px",color:stColor(r.status),background:stColor(r.status)+"22",fontSize:10}},r.status||"—")),h("td",{style:tdS},r.telesales||"—"),h("td",{style:Object.assign({},tdS,{color:"#f59e0b",fontWeight:600})},r.diem_tbm?Number(r.diem_tbm).toFixed(2):"—"),h("td",{style:tdS},h("span",{style:{color:r.cccd?"#10b981":"#ef4444",fontWeight:700}},r.cccd?"✓":"✗")),h("td",{style:tdS},h("span",{style:{color:r.email?"#10b981":"#ef4444",fontWeight:700}},r.email?"✓":"✗")),h("td",{style:Object.assign({},tdS,{color:"#8b92a9"})},r.created_at||"—"));}))
-                )
-              )
-            ),
-            h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10}},
-              h("span",{style:{fontSize:11,color:"#8b92a9"}},"Trang "+pg+"/"+pages+" · "+filtered.length+" bản ghi"),
-              h("div",{style:{display:"flex",gap:4}},
-                h("button",{onClick:function(){setPg(function(p){return Math.max(1,p-1);});},disabled:pg===1,style:Object.assign({},inp,{cursor:"pointer",opacity:pg===1?0.4:1,padding:"4px 10px"})},"‹"),
-                Array.from({length:Math.min(pages,7)},function(_,i){return i+1;}).map(function(p){return h("button",{key:p,onClick:function(){setPg(p);},style:Object.assign({},inp,{background:p===pg?"#3b82f6":"#1e2130",border:"1px solid "+(p===pg?"#3b82f6":"#2d3148"),color:p===pg?"#fff":"#c8cde0",cursor:"pointer",minWidth:28,padding:"4px 8px"})},p);}),
-                h("button",{onClick:function(){setPg(function(p){return Math.min(pages,p+1);});},disabled:pg===pages,style:Object.assign({},inp,{cursor:"pointer",opacity:pg===pages?0.4:1,padding:"4px 10px"})},"›")
-              )
-            )
-          ),
-
-          // UPLOAD
-          currentTab==="upload"&&h("div",{style:{maxWidth:560}},
-            h("div",{style:{background:"#161b2e",border:"2px dashed #3b82f655",borderRadius:12,padding:"40px 20px",textAlign:"center",cursor:"pointer"},onClick:function(){fileRef.current.click();}},h("div",{style:{fontSize:40,marginBottom:12}},"📂"),h("p",{style:{color:"#e8eaf0",fontWeight:700,margin:"0 0 6px",fontSize:14}},"Kéo thả hoặc click để chọn file"),h("p",{style:{color:"#8b92a9",fontSize:12,margin:0}},"Hỗ trợ .xlsx · .xls · .csv · ~200k rows")),
-            uploadPct>0&&uploadPct<100&&h("div",{style:{marginTop:12}},h("div",{style:{background:"#2d3148",borderRadius:4,height:8,overflow:"hidden"}},h("div",{style:{width:uploadPct+"%",height:"100%",background:"#3b82f6",borderRadius:4,transition:"width .3s"}})),h("div",{style:{fontSize:11,color:"#8b92a9",marginTop:4}},uploadPct+"%")),
-            uploadMsg&&h("div",{style:{background:uploadMsg.startsWith("✅")?"#10b98122":"#ef444422",border:"1px solid "+(uploadMsg.startsWith("✅")?"#10b981":"#ef4444")+"66",borderRadius:8,padding:"10px 14px",color:uploadMsg.startsWith("✅")?"#10b981":"#ef4444",fontSize:13,marginTop:12}},uploadMsg),
-            h("div",{style:{background:"#161b2e",border:"1px solid #2d3148",borderRadius:10,padding:"14px 18px",marginTop:14}},
-              h("div",{style:{fontWeight:600,color:"#c8cde0",marginBottom:6,fontSize:12}},"Cột Excel được nhận:"),
-              ["Họ và tên","Di động","Tỉnh/ Thành phố","NGÀNH ĐKXT NV1","Tiến trình","Tổ","Nguồn_DHV cấp 1","Số CCCD/ Mã số định danh","Email","Điểm TBM","Điểm Tổ hợp môn","Điểm DGNL"].map(function(c){return h("span",{key:c,style:{display:"inline-block",background:"#2d3148",borderRadius:4,padding:"2px 8px",margin:"2px",fontSize:11}},c);})
+          h(SC,{title:"Điểm TBM: XHB và Không XHB",sub:"So sánh điểm trung bình 2 nhóm"},
+            h("div",{style:{display:"flex",gap:12,marginTop:8}},
+              [{g:"Có XHB",c:"#10b981"},{g:"Không XHB",c:"#ef4444"}].map(function(item,i){
+                var group=af.filter(function(x){return x.xhb===item.g&&x.diem_tbm;});
+                var avg=group.length?(group.reduce(function(a,x){return a+(x.diem_tbm||0);},0)/group.length).toFixed(2):0;
+                return h("div",{key:i,style:{flex:1,background:"#1a2540",border:"1px solid "+item.c+"44",borderRadius:8,padding:"20px",textAlign:"center"}},
+                  h("div",{style:{fontSize:36,fontWeight:800,color:item.c}},avg),
+                  h("div",{style:{fontSize:12,color:"#8b92a9",marginTop:6}},item.g),
+                  h("div",{style:{fontSize:11,color:"#8b92a9"}},group.length+" thí sinh")
+                );
+              })
             )
           )
         )
-      );
-    }
+      ),
 
-    ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
-  })();
-  </script>
+      // AI
+      currentTab==="ai"&&h("div",{style:{maxWidth:800}},
+        h("div",{style:{background:"#1a1f35",border:"1px solid #3b82f688",borderRadius:10,padding:"20px",marginBottom:14}},
+          h("div",{style:{display:"flex",alignItems:"center",gap:12,marginBottom:14}},
+            h("span",{style:{fontSize:28}},"🤖"),
+            h("div",null,
+              h("div",{style:{fontWeight:700,color:"#e8eaf0",fontSize:15}},"AI Insight"),
+              h("div",{style:{fontSize:11,color:"#8b92a9",marginTop:2}},total.toLocaleString()+" hồ sơ · Claude AI")
+            )
+          ),
+          h("button",{onClick:handleAI,disabled:aiLd,style:{background:aiLd?"#2d3148":"linear-gradient(135deg,#3b82f6,#8b5cf6)",border:"none",color:"#fff",borderRadius:8,padding:"11px 0",fontSize:14,fontWeight:600,width:"100%",cursor:"pointer"}},aiLd?"⏳ Đang phân tích...":"✨ Phân tích ngay")
+        ),
+        aiTxt&&h("div",{style:{background:"#161b2e",border:"1px solid #2d3148",borderRadius:10,padding:"20px"}},
+          h("div",{style:{fontSize:12,color:"#3b82f6",fontWeight:700,marginBottom:12}},"🤖 Kết quả"),
+          h("div",{style:{fontSize:13,color:"#c8cde0",lineHeight:1.9,whiteSpace:"pre-wrap"}},aiTxt)
+        )
+      ),
+
+      // DỮ LIỆU
+      currentTab==="data"&&h("div",null,
+        h("div",{style:{display:"flex",gap:8,flexWrap:"wrap",alignItems:"flex-end",marginBottom:10}},
+          h("div",{style:{flex:1,minWidth:160}},
+            h("div",{style:{fontSize:10,color:"#8b92a9",marginBottom:3}},"🔍 Tìm kiếm"),
+            h("input",{placeholder:"Tên, SĐT...",value:srch,onChange:function(e){setSrch(e.target.value);setPg(1);},style:Object.assign({},inp,{width:"100%"})})
+          ),
+          [[tinhL,fTinh,setFTinh,"🗺️ Tỉnh/Thành"],[stL,fSt,setFSt,"📌 Tiến trình"],[tsL,fTs,setFTs,"👤 Tổ tư vấn"]].map(function(item,i){
+            return h("div",{key:i},
+              h("div",{style:{fontSize:10,color:"#8b92a9",marginBottom:3}},item[3]),
+              h("select",{value:item[1],onChange:function(e){item[2](e.target.value);setPg(1);},style:inp},
+                item[0].map(function(t){return h("option",{key:t},t);})
+              )
+            );
+          }),
+          h("span",{style:{fontSize:11,color:"#8b92a9",paddingBottom:6}},filtered.length+" kết quả")
+        ),
+        h("div",{style:{background:"#161b2e",border:"1px solid #2d3148",borderRadius:10,overflow:"hidden"}},
+          h("div",{style:{overflowX:"auto"}},
+            h("table",{style:{width:"100%",borderCollapse:"collapse"}},
+              h("thead",null,
+                h("tr",{style:{background:"#0e1117"}},
+                  [["name","Họ tên"],["phone","SĐT"],["province","Tỉnh"],["major","Ngành"],["status","Tiến trình"],["telesales","Tổ"],["diem_tbm","TBM"],["cccd","CCCD"],["email","Email"],["created_at","Ngày"]].map(function(col){
+                    return h("th",{key:col[0],onClick:function(){doSort(col[0]);},style:thS},col[1]+(sCol===col[0]?(sDir==="asc"?" ↑":" ↓"):""));
+                  })
+                )
+              ),
+              h("tbody",null,
+                paged.length===0
+                  ?h("tr",null,h("td",{colSpan:10,style:{padding:"24px",textAlign:"center",color:"#8b92a9"}},"Không có dữ liệu"))
+                  :paged.map(function(r,i){
+                    return h("tr",{key:i,style:{borderBottom:"1px solid #1a1f35",background:i%2===0?"transparent":"#111620"}},
+                      h("td",{style:Object.assign({},tdS,{color:"#e8eaf0",fontWeight:500})},r.name||"—"),
+                      h("td",{style:tdS},r.phone||"—"),
+                      h("td",{style:tdS},r.province||"—"),
+                      h("td",{style:tdS},h("span",{style:{background:"#2d3148",borderRadius:4,padding:"2px 7px",fontSize:10}},r.major||"—")),
+                      h("td",{style:tdS},h("span",{style:{borderRadius:4,padding:"2px 6px",color:stColor(r.status),background:stColor(r.status)+"22",fontSize:10}},r.status||"—")),
+                      h("td",{style:tdS},r.telesales||"—"),
+                      h("td",{style:Object.assign({},tdS,{color:"#f59e0b",fontWeight:600})},r.diem_tbm?Number(r.diem_tbm).toFixed(2):"—"),
+                      h("td",{style:tdS},h("span",{style:{color:r.cccd?"#10b981":"#ef4444",fontWeight:700}},r.cccd?"✓":"✗")),
+                      h("td",{style:tdS},h("span",{style:{color:r.email?"#10b981":"#ef4444",fontWeight:700}},r.email?"✓":"✗")),
+                      h("td",{style:Object.assign({},tdS,{color:"#8b92a9"})},r.created_at||"—")
+                    );
+                  })
+              )
+            )
+          )
+        ),
+        h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10}},
+          h("span",{style:{fontSize:11,color:"#8b92a9"}},"Trang "+pg+"/"+pages+" · "+filtered.length+" bản ghi"),
+          h("div",{style:{display:"flex",gap:4}},
+            h("button",{onClick:function(){setPg(function(p){return Math.max(1,p-1);});},disabled:pg===1,style:Object.assign({},inp,{cursor:"pointer",opacity:pg===1?0.4:1,padding:"4px 10px"})},"‹"),
+            Array.from({length:Math.min(pages,7)},function(_,i){return i+1;}).map(function(p){
+              return h("button",{key:p,onClick:function(){setPg(p);},style:Object.assign({},inp,{background:p===pg?"#3b82f6":"#1e2130",border:"1px solid "+(p===pg?"#3b82f6":"#2d3148"),color:p===pg?"#fff":"#c8cde0",cursor:"pointer",minWidth:28,padding:"4px 8px"})},p);
+            }),
+            h("button",{onClick:function(){setPg(function(p){return Math.min(pages,p+1);});},disabled:pg===pages,style:Object.assign({},inp,{cursor:"pointer",opacity:pg===pages?0.4:1,padding:"4px 10px"})},"›")
+          )
+        )
+      ),
+
+      // UPLOAD
+      currentTab==="upload"&&h("div",{style:{maxWidth:560}},
+        h("div",{style:{background:"#161b2e",border:"2px dashed #3b82f655",borderRadius:12,padding:"40px 20px",textAlign:"center",cursor:"pointer"},onClick:function(){fileRef.current.click();}},
+          h("div",{style:{fontSize:40,marginBottom:12}},"📂"),
+          h("p",{style:{color:"#e8eaf0",fontWeight:700,margin:"0 0 6px",fontSize:14}},"Kéo thả hoặc click để chọn file"),
+          h("p",{style:{color:"#8b92a9",fontSize:12,margin:0}},"Hỗ trợ .xlsx · .xls · .csv · ~200k rows")
+        ),
+        uploadPct>0&&uploadPct<100&&h("div",{style:{marginTop:12}},
+          h("div",{style:{background:"#2d3148",borderRadius:4,height:8,overflow:"hidden"}},
+            h("div",{style:{width:uploadPct+"%",height:"100%",background:"#3b82f6",borderRadius:4,transition:"width .3s"}})
+          ),
+          h("div",{style:{fontSize:11,color:"#8b92a9",marginTop:4}},uploadPct+"%")
+        ),
+        uploadMsg&&h("div",{style:{background:uploadMsg.startsWith("✅")?"#10b98122":"#ef444422",border:"1px solid "+(uploadMsg.startsWith("✅")?"#10b981":"#ef4444")+"66",borderRadius:8,padding:"10px 14px",color:uploadMsg.startsWith("✅")?"#10b981":"#ef4444",fontSize:13,marginTop:12}},uploadMsg),
+        h("div",{style:{background:"#161b2e",border:"1px solid #2d3148",borderRadius:10,padding:"14px 18px",marginTop:14}},
+          h("div",{style:{fontWeight:600,color:"#c8cde0",marginBottom:6,fontSize:12}},"Cột Excel được nhận:"),
+          ["Họ và tên","Di động","Tỉnh/ Thành phố","NGÀNH ĐKXT NV1","Tiến trình","Tổ","Nguồn_DHV cấp 1","Số CCCD/ Mã số định danh","Email","Điểm TBM","Điểm Tổ hợp môn","Điểm DGNL"].map(function(c){
+            return h("span",{key:c,style:{display:"inline-block",background:"#2d3148",borderRadius:4,padding:"2px 8px",margin:"2px",fontSize:11}},c);
+          })
+        )
+      )
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(h(App,null));
+})();
+</script>
 </body>
 </html>
